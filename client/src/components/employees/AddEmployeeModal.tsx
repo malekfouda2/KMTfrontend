@@ -48,12 +48,12 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
 
   // Fetch departments and roles for dropdowns
   const { data: departmentsData } = useQuery({
-    queryKey: ["/api/Departments"],
+    queryKey: ["/api/Department"],
     queryFn: () => apiClient.getDepartments(),
   });
 
   const { data: rolesData } = useQuery({
-    queryKey: ["/api/Roles"],
+    queryKey: ["/api/Role"],
     queryFn: () => apiClient.getRoles(),
   });
 
@@ -74,7 +74,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
   const createEmployeeMutation = useMutation({
     mutationFn: (userData: UserFormData) => apiClient.createUser(userData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/Users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/User"] });
       toast({
         title: "Success",
         description: "Employee added successfully",

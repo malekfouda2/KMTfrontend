@@ -55,32 +55,32 @@ class ApiClient {
     });
   }
 
-  // Users (KMT Backend uses Users instead of Employees)
+  // Users (KMT Backend uses User endpoint)
   async getUsers(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Users${queryString}`);
+    return this.request(`/User${queryString}`);
   }
 
   async getUser(id: string) {
-    return this.request(`/Users/${id}`);
+    return this.request(`/User/${id}`);
   }
 
   async createUser(user: any) {
-    return this.request("/Users", {
+    return this.request("/User", {
       method: "POST",
       body: JSON.stringify(user),
     });
   }
 
   async updateUser(id: string, user: any) {
-    return this.request(`/Users/${id}`, {
+    return this.request(`/User/${id}`, {
       method: "PUT",
       body: JSON.stringify(user),
     });
   }
 
   async deleteUser(id: string) {
-    return this.request(`/Users/${id}`, {
+    return this.request(`/User/${id}`, {
       method: "DELETE",
     });
   }
@@ -221,25 +221,25 @@ class ApiClient {
   // Departments
   async getDepartments(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Departments${queryString}`);
+    return this.request(`/Department${queryString}`);
   }
 
   async createDepartment(department: any) {
-    return this.request("/Departments", {
+    return this.request("/Department", {
       method: "POST",
       body: JSON.stringify(department),
     });
   }
 
   async updateDepartment(id: string, department: any) {
-    return this.request(`/Departments/${id}`, {
+    return this.request(`/Department/${id}`, {
       method: "PUT",
       body: JSON.stringify(department),
     });
   }
 
   async deleteDepartment(id: string) {
-    return this.request(`/Departments/${id}`, {
+    return this.request(`/Department/${id}`, {
       method: "DELETE",
     });
   }
@@ -247,25 +247,25 @@ class ApiClient {
   // Titles
   async getTitles(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Titles${queryString}`);
+    return this.request(`/Title${queryString}`);
   }
 
   async createTitle(title: any) {
-    return this.request("/Titles", {
+    return this.request("/Title", {
       method: "POST",
       body: JSON.stringify(title),
     });
   }
 
   async updateTitle(id: string, title: any) {
-    return this.request(`/Titles/${id}`, {
+    return this.request(`/Title/${id}`, {
       method: "PUT",
       body: JSON.stringify(title),
     });
   }
 
   async deleteTitle(id: string) {
-    return this.request(`/Titles/${id}`, {
+    return this.request(`/Title/${id}`, {
       method: "DELETE",
     });
   }
@@ -273,31 +273,31 @@ class ApiClient {
   // Roles
   async getRoles(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Roles${queryString}`);
+    return this.request(`/Role${queryString}`);
   }
 
   async createRole(role: any) {
-    return this.request("/Roles", {
+    return this.request("/Role", {
       method: "POST",
       body: JSON.stringify(role),
     });
   }
 
   async updateRole(id: string, role: any) {
-    return this.request(`/Roles/${id}`, {
+    return this.request(`/Role/${id}`, {
       method: "PUT",
       body: JSON.stringify(role),
     });
   }
 
   async deleteRole(id: string) {
-    return this.request(`/Roles/${id}`, {
+    return this.request(`/Role/${id}`, {
       method: "DELETE",
     });
   }
 
   async assignRole(userId: string, roleId: string) {
-    return this.request("/Roles/assign", {
+    return this.request("/Role/assign", {
       method: "POST",
       body: JSON.stringify({ userId, roleId }),
     });
@@ -305,11 +305,11 @@ class ApiClient {
 
   // Permissions
   async getPermissions() {
-    return this.request("/Permissions");
+    return this.request("/Permission");
   }
 
   async assignPermission(roleId: string, permission: string) {
-    return this.request("/Permissions/assign", {
+    return this.request("/Permission/assign", {
       method: "POST",
       body: JSON.stringify({ roleId, permission }),
     });

@@ -29,19 +29,19 @@ export default function Employees() {
   const [search, setSearch] = useState("");
 
   const { data: employees, isLoading } = useQuery({
-    queryKey: ["/api/Users", filters, search],
+    queryKey: ["/api/User", filters, search],
     queryFn: () => apiClient.getUsers({ ...filters, search }),
   });
 
   // Fetch departments for filter dropdown
   const { data: departmentsData } = useQuery({
-    queryKey: ["/api/Departments"],
+    queryKey: ["/api/Department"],
     queryFn: () => apiClient.getDepartments(),
   });
 
   // Fetch titles for filter dropdown
   const { data: titlesData } = useQuery({
-    queryKey: ["/api/Titles"],
+    queryKey: ["/api/Title"],
     queryFn: () => apiClient.getTitles(),
   });
 
