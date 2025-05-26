@@ -1,0 +1,179 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api";
+import { Employee, FilterParams } from "@/types";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { EmployeeTable } from "@/components/employees/EmployeeTable";
+import { AddEmployeeModal } from "@/components/employees/AddEmployeeModal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Filter } from "lucide-react";
+
+export default function Employees() {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [filters, setFilters] = useState<FilterParams>({
+    department: "",
+    employeeType: "",
+    status: "",
+  });
+  const [search, setSearch] = useState("");
+
+  const { data: employees, isLoading } = useQuery({
+    queryKey: ["/api/Employees", filters, search],
+    queryFn: () => apiClient.getEmployees({ ...filters, search }),
+  });
+
+  const handleViewEmployee = (employee: Employee) => {
+    // TODO: Implement employee detail view
+    console.log("View employee:", employee);
+  };
+
+  const handleEditEmployee = (employee: Employee) => {
+    // TODO: Implement employee edit modal
+    console.log("Edit employee:", employee);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      department: "",
+      employeeType: "",
+      status: "",
+    });
+    setSearch("");
+  };
+
+  const employeeList = employees || [];
+
+  return (
+    <MainLayout 
+      title="Employee Management" 
+      breadcrumb="Home"
+      requiredRoles={["general_manager", "hr_manager"]}
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-secondary">Employee Management</h2>
+            <p className="text-gray-600">Manage employee information and records</p>
+          </div>
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Employee
+          </Button>
+        </div>
+
+        {/* Filters */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="search">Search</Label>
+                <Input
+                  id="search"
+                  placeholder="Search employees..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>Department</Label>
+                <Select
+                  value={filters.department}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({ ...prev, department: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Departments" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Departments</SelectItem>
+                    <SelectItem value="engineering">Engineering</SelectItem>
+                    <SelectItem value="hr">Human Resources</SelectItem>
+                    <SelectItem value="finance">Finance</SelectItem>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="operations">Operations</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Employee Type</Label>
+                <Select
+                  value={filters.employeeType}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({ ...prev, employeeType: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Types</SelectItem>
+                    <SelectItem value="engineer">Engineer</SelectItem>
+                    <SelectItem value="worker">Worker</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button variant="outline" onClick={clearFilters} className="w-full">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Employee Table */}
+        <Card>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-6">
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center space-x-4">
+                      <Skeleton className="w-12 h-12 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-1/3" />
+                        <Skeleton className="h-3 w-1/4" />
+                      </div>
+                      <Skeleton className="h-8 w-20" />
+                      <Skeleton className="h-8 w-20" />
+                      <Skeleton className="h-8 w-8" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : employeeList.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-gray-500">No employees found</p>
+              </div>
+            ) : (
+              <EmployeeTable
+                employees={employeeList}
+                onViewEmployee={handleViewEmployee}
+                onEditEmployee={handleEditEmployee}
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <AddEmployeeModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+      />
+    </MainLayout>
+  );
+}
