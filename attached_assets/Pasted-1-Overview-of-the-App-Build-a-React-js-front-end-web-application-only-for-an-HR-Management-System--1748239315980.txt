@@ -1,0 +1,61 @@
+1. Overview of the App
+Build a React.js front-end web application only for an HR Management System (HRMS). Do not build any Node.js or other backend. The backend API is already implemented using the .NET Framework at this repository: https://github.com/ahmeddsamir/KmtBackend. The React app will integrate with this backend, which will be tested locally at base URL: http://localhost:5114/api.
+and here's the link of authentication through the backend: http://localhost:5114/api/Auth/login
+
+The system manages employee data and HR functions such as attendance, leave management, overtime, bonuses, and mission workflows.
+
+2. User Types and Access Levels
+
+General Manager: Full access including employee management, policy creation, analytics.
+
+HR Manager: Similar to General Manager but restricted from some tasks (e.g., mission assignment). Manages employees, vacation, deductions, bonuses.
+
+Team Leaders: Access limited to their team data only. Can view and approve attendance, leave, missions.
+
+General Manager and HR Manager have full CRUD on employee data; Team Leaders have limited access.
+
+3. Employee Data Types and Policies
+Two employee types: Engineers (regular, manager, or team leader) and Workers. Employee data includes name, type, department, salary, vacation, attendance, leave, missions.
+
+Policies (overtime, vacation, deduction, bonus) are managed per specified rules and via the backend API.
+
+4. Mission Flow
+Missions assigned by any KMT team member, approved by manager or team leader. Fleet manager/supervisor adds transportation details.
+
+5. Dashboard
+
+General Manager and HR Manager dashboards: full data management and analytics.
+
+Team Leader dashboard: view and approve only their team’s data.
+
+6. Attendance & Check-ins/Checkouts
+Employees use a mobile app to check-in/out; data shown in HRMS dashboard for approval by Team Leaders and Managers.
+
+7. Technical Details
+
+Use React.js for the entire front-end UI.
+
+Manage state using React hooks (useState, useEffect).
+
+Use React Router for navigation.
+
+Integrate charting libraries (Chart.js or Recharts) for analytics.
+
+Styling with CSS Modules, Styled Components, or TailwindCSS as preferred.
+
+8. Integration with .NET Backend API
+
+Connect React app to the provided .NET API at http://localhost:5114/api.
+
+All CRUD, policy management, mission workflows, and authentication must be done via this API.
+
+No backend logic or Node.js server development is required or allowed.
+
+9. Security & Authentication
+
+Implement JWT-based authentication; tokens are received from the .NET backend.
+
+Role-based access control must be enforced on the front-end using JWT payload.
+
+10. Login: login happens using email and password, and it's authenticated through the backend here: http://localhost:5114/api/Auth/login
+keep it simple
