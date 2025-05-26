@@ -1,9 +1,27 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -14,12 +32,86 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, MapPin, Calendar, CheckCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, MapPin, Calendar, User, Truck, Edit, Trash2 } from "lucide-react";
 
 export default function Missions() {
-  const { data: missions, isLoading } = useQuery({
-    queryKey: ["/api/Missions"],
-    queryFn: () => apiClient.getMissions(),
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "",
+    assignee: "",
+  });
+  const [search, setSearch] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: missionsData, isLoading } = useQuery({
+    queryKey: ["/api/Missions", filters, search],
+    queryFn: () => apiClient.getMissions({ ...filters, search }),
+  });
+
+  const { data: usersData } = useQuery({
+    queryKey: ["/api/Users"],
+    queryFn: () => apiClient.getUsers(),
+  });
+
+  const missions = Array.isArray(missionsData) ? missionsData : [];
+  const users = Array.isArray(usersData) ? usersData : [];
+
+  const createMissionMutation = useMutation({
+    mutationFn: (mission: any) => apiClient.createMission(mission),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/Missions"] });
+      setShowCreateModal(false);
+      toast({
+        title: "Success",
+        description: "Mission created successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const assignMissionMutation = useMutation({
+    mutationFn: ({ id, userId }: { id: string; userId: string }) => 
+      apiClient.assignMission(id, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/Missions"] });
+      toast({
+        title: "Success",
+        description: "Mission assigned successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMissionMutation = useMutation({
+    mutationFn: (id: string) => apiClient.deleteMission(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/Missions"] });
+      toast({
+        title: "Success",
+        description: "Mission deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   const getStatusColor = (status: string) => {

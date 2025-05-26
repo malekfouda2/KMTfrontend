@@ -34,16 +34,19 @@ export default function Employees() {
   });
 
   // Fetch departments for filter dropdown
-  const { data: departments = [] } = useQuery({
+  const { data: departmentsData } = useQuery({
     queryKey: ["/api/Departments"],
     queryFn: () => apiClient.getDepartments(),
   });
 
   // Fetch titles for filter dropdown
-  const { data: titles = [] } = useQuery({
+  const { data: titlesData } = useQuery({
     queryKey: ["/api/Titles"],
     queryFn: () => apiClient.getTitles(),
   });
+
+  const departments = Array.isArray(departmentsData) ? departmentsData : [];
+  const titles = Array.isArray(titlesData) ? titlesData : [];
 
   const handleViewEmployee = (employee: Employee) => {
     // TODO: Implement employee detail view

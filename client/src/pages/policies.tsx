@@ -1,9 +1,20 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -14,28 +25,58 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Settings, Edit, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, FileText, Edit, Trash2, Calendar } from "lucide-react";
 
 export default function Policies() {
-  const { data: policies, isLoading } = useQuery({
-    queryKey: ["/api/Policies"],
-    queryFn: () => apiClient.getPolicies(),
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [search, setSearch] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: policiesData, isLoading } = useQuery({
+    queryKey: ["/api/Policies", search],
+    queryFn: () => apiClient.getPolicies({ search }),
   });
 
-  const getPolicyTypeColor = (type: string) => {
-    switch (type) {
-      case "overtime":
-        return "bg-blue-100 text-blue-800";
-      case "vacation":
-        return "bg-green-100 text-green-800";
-      case "deduction":
-        return "bg-red-100 text-red-800";
-      case "bonus":
-        return "bg-purple-100 text-purple-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  const policies = Array.isArray(policiesData) ? policiesData : [];
+
+  const createPolicyMutation = useMutation({
+    mutationFn: (policy: any) => apiClient.createPolicy(policy),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/Policies"] });
+      setShowCreateModal(false);
+      toast({
+        title: "Success",
+        description: "Policy created successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deletePolicyMutation = useMutation({
+    mutationFn: (id: number) => apiClient.deletePolicy(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/Policies"] });
+      toast({
+        title: "Success",
+        description: "Policy deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -47,7 +88,7 @@ export default function Policies() {
 
   return (
     <MainLayout 
-      title="Policies" 
+      title="Policy Management" 
       breadcrumb="Home"
       requiredRoles={["general_manager", "hr_manager"]}
     >
@@ -56,176 +97,214 @@ export default function Policies() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-secondary">Policy Management</h2>
-            <p className="text-gray-600">Manage HR policies and rules</p>
+            <p className="text-gray-600">Manage company policies and procedures</p>
           </div>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Policy
-          </Button>
+          <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Policy
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create New Policy</DialogTitle>
+                <DialogDescription>
+                  Add a new company policy or procedure
+                </DialogDescription>
+              </DialogHeader>
+              <CreatePolicyForm 
+                onSubmit={(data) => createPolicyMutation.mutate(data)}
+                isLoading={createPolicyMutation.isPending}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Policy Types Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Overtime Policies</p>
-                  <p className="text-2xl font-bold text-secondary">3</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Settings className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Vacation Policies</p>
-                  <p className="text-2xl font-bold text-secondary">2</p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Settings className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Deduction Policies</p>
-                  <p className="text-2xl font-bold text-secondary">4</p>
-                </div>
-                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                  <Settings className="w-6 h-6 text-red-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Bonus Policies</p>
-                  <p className="text-2xl font-bold text-secondary">2</p>
-                </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Settings className="w-6 h-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Search */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="max-w-md">
+              <Label htmlFor="search">Search Policies</Label>
+              <Input
+                id="search"
+                placeholder="Search by title or content..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Policies Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Policies</CardTitle>
+            <CardTitle>Company Policies</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent>
             {isLoading ? (
-              <div className="p-6">
-                <div className="space-y-4">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex items-center space-x-4">
-                      <Skeleton className="h-4 w-1/4" />
-                      <Skeleton className="h-4 w-1/6" />
-                      <Skeleton className="h-4 w-1/4" />
-                      <Skeleton className="h-4 w-1/6" />
-                      <Skeleton className="h-8 w-20" />
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center space-x-4">
+                    <Skeleton className="w-8 h-8 rounded" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-3 w-2/3" />
                     </div>
-                  ))}
-                </div>
+                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-8 w-8" />
+                  </div>
+                ))}
+              </div>
+            ) : policies.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500">No policies found</p>
               </div>
             ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Policy Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Last Updated</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {(policies || []).map((policy: any) => (
-                      <TableRow key={policy.id}>
-                        <TableCell>
-                          <div className="font-medium text-gray-900">
-                            {policy.name}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="secondary"
-                            className={getPolicyTypeColor(policy.type)}
-                          >
-                            {policy.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-gray-600 max-w-md truncate">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Effective Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {policies.map((policy: any) => (
+                    <TableRow key={policy.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{policy.title}</div>
+                          <div className="text-sm text-gray-500 truncate max-w-xs">
                             {policy.description}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="secondary"
-                            className={
-                              policy.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                            }
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {policy.category || "General"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                          {policy.effectiveDate ? formatDate(policy.effectiveDate) : "N/A"}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          className={
+                            policy.isActive ? 
+                            "bg-green-100 text-green-800" : 
+                            "bg-gray-100 text-gray-800"
+                          }
+                        >
+                          {policy.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => deletePolicyMutation.mutate(policy.id)}
                           >
-                            {policy.isActive ? "Active" : "Inactive"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {formatDate(policy.updatedAt || policy.createdAt)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-blue-600 hover:text-blue-700"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {(!policies || policies.length === 0) && (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-6">
-                          <p className="text-gray-500">No policies found</p>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>
       </div>
     </MainLayout>
+  );
+}
+
+// Create Policy Form Component
+function CreatePolicyForm({ onSubmit, isLoading }: any) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    content: "",
+    category: "",
+    effectiveDate: "",
+    isActive: true,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="title">Policy Title</Label>
+        <Input
+          id="title"
+          value={formData.title}
+          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          required
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Input
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="content">Policy Content</Label>
+        <Textarea
+          id="content"
+          value={formData.content}
+          onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+          rows={6}
+          required
+        />
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="category">Category</Label>
+          <Input
+            id="category"
+            value={formData.category}
+            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+            placeholder="e.g., HR, IT, Safety"
+          />
+        </div>
+        <div>
+          <Label htmlFor="effectiveDate">Effective Date</Label>
+          <Input
+            id="effectiveDate"
+            type="date"
+            value={formData.effectiveDate}
+            onChange={(e) => setFormData(prev => ({ ...prev, effectiveDate: e.target.value }))}
+          />
+        </div>
+      </div>
+      
+      <div className="flex justify-end gap-2">
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Policy"}
+        </Button>
+      </div>
+    </form>
   );
 }
