@@ -43,12 +43,7 @@ export default function Login() {
 
   const onSubmit = async (data: LoginFormData) => {
     setError("");
-    try {
-      await login(data.email, data.password);
-      setLocation("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Login failed");
-    }
+    login(data.email, data.password);
   };
 
   if (isAuthenticated) {
