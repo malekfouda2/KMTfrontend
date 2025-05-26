@@ -29,8 +29,20 @@ export default function Employees() {
   const [search, setSearch] = useState("");
 
   const { data: employees, isLoading } = useQuery({
-    queryKey: ["/api/Employees", filters, search],
-    queryFn: () => apiClient.getEmployees({ ...filters, search }),
+    queryKey: ["/api/Users", filters, search],
+    queryFn: () => apiClient.getUsers({ ...filters, search }),
+  });
+
+  // Fetch departments for filter dropdown
+  const { data: departments = [] } = useQuery({
+    queryKey: ["/api/Departments"],
+    queryFn: () => apiClient.getDepartments(),
+  });
+
+  // Fetch titles for filter dropdown
+  const { data: titles = [] } = useQuery({
+    queryKey: ["/api/Titles"],
+    queryFn: () => apiClient.getTitles(),
   });
 
   const handleViewEmployee = (employee: Employee) => {
@@ -52,7 +64,7 @@ export default function Employees() {
     setSearch("");
   };
 
-  const employeeList = employees || [];
+  const employeeList = Array.isArray(employees) ? employees : [];
 
   return (
     <MainLayout 
@@ -99,16 +111,16 @@ export default function Employees() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Departments</SelectItem>
-                    <SelectItem value="engineering">Engineering</SelectItem>
-                    <SelectItem value="hr">Human Resources</SelectItem>
-                    <SelectItem value="finance">Finance</SelectItem>
-                    <SelectItem value="marketing">Marketing</SelectItem>
-                    <SelectItem value="operations">Operations</SelectItem>
+                    {departments.map((dept: any) => (
+                      <SelectItem key={dept.id} value={dept.id || dept.name}>
+                        {dept.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Employee Type</Label>
+                <Label>Title</Label>
                 <Select
                   value={filters.employeeType}
                   onValueChange={(value) =>
@@ -116,12 +128,15 @@ export default function Employees() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="All Types" />
+                    <SelectValue placeholder="All Titles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Types</SelectItem>
-                    <SelectItem value="engineer">Engineer</SelectItem>
-                    <SelectItem value="worker">Worker</SelectItem>
+                    <SelectItem value="">All Titles</SelectItem>
+                    {titles.map((title: any) => (
+                      <SelectItem key={title.id} value={title.id || title.name}>
+                        {title.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
