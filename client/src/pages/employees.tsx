@@ -113,7 +113,7 @@ export default function Employees() {
                     <SelectValue placeholder="All Departments" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Departments</SelectItem>
+                    <SelectItem value="all">All Departments</SelectItem>
                     {departments.map((dept: any) => (
                       <SelectItem key={dept.id} value={dept.id || dept.name}>
                         {dept.name}
@@ -134,7 +134,7 @@ export default function Employees() {
                     <SelectValue placeholder="All Titles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Titles</SelectItem>
+                    <SelectItem value="all">All Titles</SelectItem>
                     {titles.map((title: any) => (
                       <SelectItem key={title.id} value={title.id || title.name}>
                         {title.name}

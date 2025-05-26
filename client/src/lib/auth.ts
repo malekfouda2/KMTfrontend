@@ -46,7 +46,19 @@ export const authService = {
   // Check if user has required role
   hasRole: (user: User | null, requiredRoles: string[]): boolean => {
     if (!user) return false;
-    return requiredRoles.includes(user.role);
+    
+    // Map KMT backend roles to our frontend role system
+    const roleMapping: { [key: string]: string[] } = {
+      "Super Admin": ["general_manager", "hr_manager", "team_leader"],
+      "Admin": ["hr_manager", "team_leader"],
+      "HR Manager": ["hr_manager"],
+      "Team Leader": ["team_leader"],
+      "Manager": ["hr_manager"],
+      "Employee": []
+    };
+    
+    const userMappedRoles = roleMapping[user.role] || [];
+    return requiredRoles.some(role => userMappedRoles.includes(role));
   },
 
   // Get user permissions based on role
