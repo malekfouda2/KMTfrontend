@@ -15,9 +15,35 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       apiClient.login(email, password),
-    onSuccess: (data: AuthResponse) => {
-      authService.setAuth(data);
-      setUser(data.user);
+    onSuccess: (data: any, variables) => {
+      console.log("Login response:", data);
+      
+      // Handle different possible response formats from .NET API
+      let authData: AuthResponse;
+      if (data.token && data.user) {
+        // Already in correct format
+        authData = data;
+      } else if (data.token) {
+        // Token only - create a minimal user object
+        authData = {
+          token: data.token,
+          user: {
+            id: data.userId || 1,
+            name: data.name || variables.email.split('@')[0],
+            email: variables.email,
+            password: '',
+            role: data.role || 'hr_manager',
+            department: data.department || null,
+            isActive: true,
+            createdAt: new Date()
+          }
+        };
+      } else {
+        throw new Error("Invalid login response format");
+      }
+
+      authService.setAuth(authData);
+      setUser(authData.user);
       setIsAuthenticated(true);
       queryClient.invalidateQueries();
       toast({
@@ -47,6 +73,8 @@ export const useAuth = () => {
   });
 
   const login = (email: string, password: string) => {
+    // Clear any existing corrupted data first
+    authService.clearAuth();
     loginMutation.mutate({ email, password });
   };
 
@@ -72,15 +100,16 @@ export const useAuth = () => {
   // Check token validity on app load
   useEffect(() => {
     const token = authService.getToken();
-    if (token) {
-      // In a real app, you might want to validate the token with the server
-      const currentUser = authService.getUser();
-      if (currentUser) {
-        setUser(currentUser);
-        setIsAuthenticated(true);
-      } else {
-        logout();
-      }
+    const currentUser = authService.getUser();
+    
+    if (token && currentUser) {
+      setUser(currentUser);
+      setIsAuthenticated(true);
+    } else if (token && !currentUser) {
+      // Clear invalid state
+      authService.clearAuth();
+      setUser(null);
+      setIsAuthenticated(false);
     }
   }, []);
 
