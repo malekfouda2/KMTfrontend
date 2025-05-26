@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
-import { insertEmployeeSchema, type InsertEmployee } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -35,44 +33,48 @@ interface AddEmployeeModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const employeeFormSchema = insertEmployeeSchema.extend({
-  firstName: insertEmployeeSchema.shape.firstName,
-  lastName: insertEmployeeSchema.shape.lastName,
-  email: insertEmployeeSchema.shape.email,
-  phone: insertEmployeeSchema.shape.phone.optional(),
-  employeeType: insertEmployeeSchema.shape.employeeType,
-  department: insertEmployeeSchema.shape.department,
-  position: insertEmployeeSchema.shape.position,
-  salary: insertEmployeeSchema.shape.salary.optional(),
-  startDate: insertEmployeeSchema.shape.startDate,
-  managerId: insertEmployeeSchema.shape.managerId.optional(),
-});
+interface UserFormData {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+  department: string;
+  isActive: boolean;
+}
 
 export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm<InsertEmployee>({
-    resolver: zodResolver(employeeFormSchema),
+  // Fetch departments and roles for dropdowns
+  const { data: departmentsData } = useQuery({
+    queryKey: ["/api/Departments"],
+    queryFn: () => apiClient.getDepartments(),
+  });
+
+  const { data: rolesData } = useQuery({
+    queryKey: ["/api/Roles"],
+    queryFn: () => apiClient.getRoles(),
+  });
+
+  const departments = Array.isArray(departmentsData) ? departmentsData : [];
+  const roles = Array.isArray(rolesData) ? rolesData : [];
+
+  const form = useForm<UserFormData>({
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      name: "",
       email: "",
-      phone: "",
-      employeeType: "",
+      password: "",
+      role: "",
       department: "",
-      position: "",
-      salary: "",
-      startDate: new Date(),
-      managerId: undefined,
       isActive: true,
     },
   });
 
   const createEmployeeMutation = useMutation({
-    mutationFn: (employee: InsertEmployee) => apiClient.createEmployee(employee),
+    mutationFn: (userData: UserFormData) => apiClient.createUser(userData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/Employees"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/Users"] });
       toast({
         title: "Success",
         description: "Employee added successfully",
@@ -89,7 +91,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
     },
   });
 
-  const onSubmit = (data: InsertEmployee) => {
+  const onSubmit = (data: UserFormData) => {
     createEmployeeMutation.mutate(data);
   };
 
@@ -105,26 +107,12 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="firstName"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name *</FormLabel>
+                    <FormLabel>Full Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter first name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter last name" {...field} />
+                      <Input placeholder="Enter full name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -147,12 +135,12 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
 
               <FormField
                 control={form.control}
-                name="phone"
+                name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>Password *</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="Enter phone number" {...field} />
+                      <Input type="password" placeholder="Enter password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -161,19 +149,22 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
 
               <FormField
                 control={form.control}
-                name="employeeType"
+                name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Employee Type *</FormLabel>
+                    <FormLabel>Role *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue placeholder="Select role" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="engineer">Engineer</SelectItem>
-                        <SelectItem value="worker">Worker</SelectItem>
+                        {roles.map((role: any) => (
+                          <SelectItem key={role.id} value={role.name || role.id}>
+                            {role.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -186,7 +177,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                 name="department"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Department *</FormLabel>
+                    <FormLabel>Department</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -194,66 +185,13 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="engineering">Engineering</SelectItem>
-                        <SelectItem value="hr">Human Resources</SelectItem>
-                        <SelectItem value="finance">Finance</SelectItem>
-                        <SelectItem value="marketing">Marketing</SelectItem>
-                        <SelectItem value="operations">Operations</SelectItem>
+                        {departments.map((dept: any) => (
+                          <SelectItem key={dept.id} value={dept.name || dept.id}>
+                            {dept.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="position"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Position *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter position" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="salary"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Salary</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter salary"
-                        step="0.01"
-                        min="0"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Date *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
-                        value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                        onChange={(e) => field.onChange(new Date(e.target.value))}
-                      />
-                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
