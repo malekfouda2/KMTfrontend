@@ -16,32 +16,68 @@ export const useAuth = () => {
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       apiClient.login(email, password),
     onSuccess: (data: any, variables) => {
-      console.log("Login response:", data);
+      console.log("Full login response:", JSON.stringify(data, null, 2));
       
       // Handle different possible response formats from .NET API
       let authData: AuthResponse;
-      if (data.token && data.user) {
-        // Already in correct format
-        authData = data;
-      } else if (data.token) {
-        // Token only - create a minimal user object
+      
+      // Check if data has token property (most common .NET auth responses)
+      if (data && (data.token || data.accessToken || data.access_token)) {
+        const token = data.token || data.accessToken || data.access_token;
+        
         authData = {
-          token: data.token,
+          token: token,
           user: {
-            id: data.userId || 1,
-            name: data.name || variables.email.split('@')[0],
-            email: variables.email,
+            id: data.userId || data.id || 1,
+            name: data.name || data.userName || data.fullName || variables.email.split('@')[0],
+            email: data.email || variables.email,
             password: '',
-            role: data.role || 'hr_manager',
+            role: data.role || data.userRole || 'hr_manager',
             department: data.department || null,
             isActive: true,
             createdAt: new Date()
           }
         };
-      } else {
-        throw new Error("Invalid login response format");
+      } 
+      // Check if the entire response is a token string
+      else if (typeof data === 'string') {
+        authData = {
+          token: data,
+          user: {
+            id: 1,
+            name: variables.email.split('@')[0],
+            email: variables.email,
+            password: '',
+            role: 'hr_manager',
+            department: null,
+            isActive: true,
+            createdAt: new Date()
+          }
+        };
+      }
+      // Handle nested user object structure
+      else if (data && data.user && (data.user.token || data.token)) {
+        authData = {
+          token: data.token || data.user.token,
+          user: {
+            id: data.user.id || 1,
+            name: data.user.name || data.user.userName || variables.email.split('@')[0],
+            email: data.user.email || variables.email,
+            password: '',
+            role: data.user.role || 'hr_manager',
+            department: data.user.department || null,
+            isActive: true,
+            createdAt: new Date()
+          }
+        };
+      }
+      else {
+        console.error("Unexpected login response format:", data);
+        throw new Error(`Login succeeded but response format not recognized. Expected token field.`);
       }
 
+      console.log("Processed auth data:", authData);
+      
       authService.setAuth(authData);
       setUser(authData.user);
       setIsAuthenticated(true);
