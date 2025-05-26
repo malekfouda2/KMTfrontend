@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { authService } from "@/lib/auth";
+import { authService, decodeToken } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
 import { User, AuthResponse } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -21,19 +21,23 @@ export const useAuth = () => {
       // Handle different possible response formats from .NET API
       let authData: AuthResponse;
       
-      // Check if data has token property (most common .NET auth responses)
-      if (data && (data.token || data.accessToken || data.access_token)) {
-        const token = data.token || data.accessToken || data.access_token;
+      // Handle the specific format from your .NET backend: {data: {token: "..."}}
+      if (data && data.data && data.data.token) {
+        const token = data.data.token;
+        
+        // Decode JWT to extract user information
+        const decodedToken = decodeToken(token);
+        console.log("Decoded token:", decodedToken);
         
         authData = {
           token: token,
           user: {
-            id: data.userId || data.id || 1,
-            name: data.name || data.userName || data.fullName || variables.email.split('@')[0],
-            email: data.email || variables.email,
+            id: decodedToken?.sub || 1,
+            name: decodedToken?.unique_name || variables.email.split('@')[0],
+            email: decodedToken?.email || variables.email,
             password: '',
-            role: data.role || data.userRole || 'hr_manager',
-            department: data.department || null,
+            role: decodedToken?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'hr_manager',
+            department: decodedToken?.department || null,
             isActive: true,
             createdAt: new Date()
           }
