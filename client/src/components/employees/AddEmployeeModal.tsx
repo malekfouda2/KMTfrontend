@@ -74,6 +74,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
   console.log("AddEmployeeModal: Department loading:", deptLoading);
 
   const form = useForm<UserFormData>({
+    resolver: zodResolver(userFormSchema),
     defaultValues: {
       name: "",
       username: "",
