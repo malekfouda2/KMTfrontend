@@ -252,6 +252,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(policy);
   });
 
+  // Dashboard endpoints
+  app.get("/api/Dashboard/department-distribution", (req, res) => {
+    res.json([
+      { name: "Engineering", value: 12 },
+      { name: "Human Resources", value: 8 },
+      { name: "Finance", value: 6 },
+      { name: "Marketing", value: 10 }
+    ]);
+  });
+
+  app.get("/api/Dashboard/stats", (req, res) => {
+    res.json({
+      totalEmployees: 36,
+      presentToday: 32,
+      onLeave: 3,
+      activeMissions: 5,
+      attendanceRate: 88.9,
+      pendingApprovals: 7,
+      overtimeHours: 24
+    });
+  });
+
+  app.get("/api/Dashboard/attendance-trends", (req, res) => {
+    res.json([
+      { date: "2024-01-08", present: 28, absent: 4 },
+      { date: "2024-01-09", present: 30, absent: 2 },
+      { date: "2024-01-10", present: 29, absent: 3 },
+      { date: "2024-01-11", present: 32, absent: 0 },
+      { date: "2024-01-12", present: 31, absent: 1 }
+    ]);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

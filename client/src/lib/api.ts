@@ -43,14 +43,14 @@ class ApiClient {
 
   // Authentication
   async login(email: string, password: string) {
-    return this.request("/Auth/login", {
+    return this.request("/api/Auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
   }
 
   async logout() {
-    return this.request("/Auth/logout", {
+    return this.request("/api/Auth/logout", {
       method: "POST",
     });
   }
@@ -58,29 +58,29 @@ class ApiClient {
   // Users (KMT Backend uses User endpoint)
   async getUsers(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/User${queryString}`);
+    return this.request(`/api/User${queryString}`);
   }
 
   async getUser(id: string) {
-    return this.request(`/User/${id}`);
+    return this.request(`/api/User/${id}`);
   }
 
   async createUser(user: any) {
-    return this.request("/User", {
+    return this.request("/api/User", {
       method: "POST",
       body: JSON.stringify(user),
     });
   }
 
   async updateUser(id: string, user: any) {
-    return this.request(`/User/${id}`, {
+    return this.request(`/api/User/${id}`, {
       method: "PUT",
       body: JSON.stringify(user),
     });
   }
 
   async deleteUser(id: string) {
-    return this.request(`/User/${id}`, {
+    return this.request(`/api/User/${id}`, {
       method: "DELETE",
     });
   }
@@ -109,18 +109,18 @@ class ApiClient {
   // Attendance
   async getAttendance(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Attendance${queryString}`);
+    return this.request(`/api/Attendance${queryString}`);
   }
 
   async createAttendance(attendance: any) {
-    return this.request("/Attendance", {
+    return this.request("/api/Attendance", {
       method: "POST",
       body: JSON.stringify(attendance),
     });
   }
 
   async approveAttendance(id: number) {
-    return this.request(`/Attendance/${id}/approve`, {
+    return this.request(`/api/Attendance/${id}/approve`, {
       method: "PATCH",
     });
   }
@@ -128,11 +128,11 @@ class ApiClient {
   // Leave Requests
   async getLeaveRequests(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/LeaveRequests${queryString}`);
+    return this.request(`/api/LeaveRequests${queryString}`);
   }
 
   async createLeaveRequest(request: any) {
-    return this.request("/LeaveRequests", {
+    return this.request("/api/LeaveRequests", {
       method: "POST",
       body: JSON.stringify(request),
     });
@@ -221,7 +221,7 @@ class ApiClient {
   // Departments
   async getDepartments(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Department${queryString}`);
+    return this.request(`/api/Department${queryString}`);
   }
 
   async createDepartment(department: any) {
@@ -247,7 +247,7 @@ class ApiClient {
   // Titles
   async getTitles(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Title${queryString}`);
+    return this.request(`/api/Title${queryString}`);
   }
 
   async createTitle(title: any) {

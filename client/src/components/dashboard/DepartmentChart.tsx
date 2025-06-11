@@ -39,7 +39,7 @@ export const DepartmentChart = () => {
     );
   }
 
-  const chartData = departmentData || [
+  const chartData = Array.isArray(departmentData) ? departmentData : [
     { name: "Engineering", value: 89 },
     { name: "HR", value: 23 },
     { name: "Finance", value: 31 },
