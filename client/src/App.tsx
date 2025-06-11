@@ -14,6 +14,8 @@ import Leave from "@/pages/leave";
 import Missions from "@/pages/missions";
 import Policies from "@/pages/policies";
 import Analytics from "@/pages/analytics";
+import Departments from "@/pages/departments";
+import Roles from "@/pages/roles";
 import NotFound from "@/pages/not-found";
 
 function AuthenticatedRoutes() {
@@ -33,6 +35,8 @@ function AuthenticatedRoutes() {
       <Route path="/missions" component={Missions} />
       <Route path="/policies" component={Policies} />
       <Route path="/analytics" component={Analytics} />
+      <Route path="/departments" component={Departments} />
+      <Route path="/roles" component={Roles} />
       <Route component={NotFound} />
     </Switch>
   );

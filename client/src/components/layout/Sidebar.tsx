@@ -135,15 +135,15 @@ export const Sidebar = () => {
             return (
               <li key={item.id}>
                 <Link href={item.route}>
-                  <a
+                  <div
                     className={cn(
-                      "flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors",
+                      "flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer",
                       isActive && "bg-gray-100 text-primary"
                     )}
                   >
                     <Icon className="w-5 h-5" />
                     <span className="ml-3">{item.label}</span>
-                  </a>
+                  </div>
                 </Link>
               </li>
             );

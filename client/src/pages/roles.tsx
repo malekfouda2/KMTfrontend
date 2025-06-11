@@ -50,15 +50,18 @@ export default function Roles() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+  const { data: rolesData = [], isLoading: rolesLoading } = useQuery({
     queryKey: ['/api/Role'],
     queryFn: () => apiClient.getRoles(),
   });
 
-  const { data: users = [] } = useQuery({
+  const { data: usersData = [] } = useQuery({
     queryKey: ['/api/User'],
     queryFn: () => apiClient.getUsers(),
   });
+
+  const roles = rolesData as Role[];
+  const users = usersData as User[];
 
   const roleForm = useForm<RoleFormData>({
     resolver: zodResolver(roleSchema),

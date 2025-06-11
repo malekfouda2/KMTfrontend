@@ -282,6 +282,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(policy);
   });
 
+  // Role endpoints - using existing structure
+  app.get("/api/Role", (req, res) => {
+    res.json([
+      {
+        id: 1,
+        name: "Super Admin",
+        description: "Full system access and administration",
+        permissions: ["*"],
+        userCount: 1
+      },
+      {
+        id: 2, 
+        name: "HR Manager",
+        description: "Human resources management and employee relations",
+        permissions: ["users", "attendance", "leave"],
+        userCount: 3
+      },
+      {
+        id: 3,
+        name: "Team Leader", 
+        description: "Lead and coordinate team activities",
+        permissions: ["attendance", "missions"],
+        userCount: 8
+      },
+      {
+        id: 4,
+        name: "General Manager",
+        description: "Overall management and strategic decisions",
+        permissions: ["users", "attendance", "leave", "missions", "policies"],
+        userCount: 2
+      }
+    ]);
+  });
+
+  app.post("/api/Role", (req, res) => {
+    const { name, description } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({
+        errors: {
+          Name: ["The Name field is required."]
+        },
+        type: "https://tools.ietf.org/html/rfc9110#section-15.5.1", 
+        title: "One or more validation errors occurred.",
+        status: 400
+      });
+    }
+
+    const newRole = {
+      id: Date.now().toString(),
+      name,
+      description: description || "",
+      userCount: 0,
+      createdAt: new Date().toISOString()
+    };
+    res.json(newRole);
+  });
+
+  app.put("/api/Role/:id", (req, res) => {
+    res.json({ id: req.params.id, ...req.body });
+  });
+
+  app.delete("/api/Role/:id", (req, res) => {
+    res.json({ message: "Role deleted successfully" });
+  });
+
+  // Role assignment endpoint
+  app.post("/api/Role/:roleId/assign/:userId", (req, res) => {
+    res.json({ 
+      message: "Role assigned successfully",
+      roleId: req.params.roleId,
+      userId: req.params.userId
+    });
+  });
+
   // Dashboard endpoints
   app.get("/api/Dashboard/department-distribution", (req, res) => {
     res.json([
