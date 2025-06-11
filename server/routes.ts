@@ -97,6 +97,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ]);
   });
 
+  // Role management
+  app.get("/api/Role", (req, res) => {
+    res.json([
+      { id: 1, name: "Super Admin", permissions: ["*"] },
+      { id: 2, name: "HR Manager", permissions: ["users", "attendance", "leave"] },
+      { id: 3, name: "Team Leader", permissions: ["attendance", "missions"] },
+      { id: 4, name: "General Manager", permissions: ["users", "attendance", "leave", "missions", "policies"] }
+    ]);
+  });
+
   // Attendance management
   app.get("/api/Attendance", (req, res) => {
     res.json([

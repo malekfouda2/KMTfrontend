@@ -273,7 +273,7 @@ class ApiClient {
   // Roles
   async getRoles(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Role${queryString}`);
+    return this.request(`/api/Role${queryString}`);
   }
 
   async createRole(role: any) {

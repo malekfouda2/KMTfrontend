@@ -47,9 +47,14 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
   const queryClient = useQueryClient();
 
   // Fetch departments and roles for dropdowns
-  const { data: departmentsData } = useQuery({
+  const { data: departmentsData, isLoading: deptLoading } = useQuery({
     queryKey: ["/api/Department"],
-    queryFn: () => apiClient.getDepartments(),
+    queryFn: async () => {
+      console.log("AddEmployeeModal: Fetching departments...");
+      const result = await apiClient.getDepartments();
+      console.log("AddEmployeeModal: Departments result:", result);
+      return result;
+    },
   });
 
   const { data: rolesData } = useQuery({
@@ -59,6 +64,9 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
 
   const departments = Array.isArray(departmentsData) ? departmentsData : [];
   const roles = Array.isArray(rolesData) ? rolesData : [];
+  
+  console.log("AddEmployeeModal: Final departments:", departments);
+  console.log("AddEmployeeModal: Department loading:", deptLoading);
 
   const form = useForm<UserFormData>({
     defaultValues: {

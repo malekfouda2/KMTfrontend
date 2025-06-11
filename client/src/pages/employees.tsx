@@ -36,23 +36,46 @@ export default function Employees() {
   // Fetch departments for filter dropdown
   const { data: departmentsData, isLoading: departmentsLoading, error: departmentsError } = useQuery({
     queryKey: ["/api/Department"],
-    queryFn: () => apiClient.getDepartments(),
+    queryFn: async () => {
+      console.log("Fetching departments...");
+      try {
+        const result = await apiClient.getDepartments();
+        console.log("Departments fetched successfully:", result);
+        return result;
+      } catch (error) {
+        console.error("Department fetch error:", error);
+        throw error;
+      }
+    },
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnMount: true,
   });
 
   // Fetch titles for filter dropdown
   const { data: titlesData, isLoading: titlesLoading, error: titlesError } = useQuery({
     queryKey: ["/api/Title"],
-    queryFn: () => apiClient.getTitles(),
+    queryFn: async () => {
+      console.log("Fetching titles...");
+      try {
+        const result = await apiClient.getTitles();
+        console.log("Titles fetched successfully:", result);
+        return result;
+      } catch (error) {
+        console.error("Title fetch error:", error);
+        throw error;
+      }
+    },
   });
 
   const departments = Array.isArray(departmentsData) ? departmentsData : [];
   const titles = Array.isArray(titlesData) ? titlesData : [];
 
   // Debug logging
-  console.log("Departments data:", departmentsData);
-  console.log("Titles data:", titlesData);
-  console.log("Departments error:", departmentsError);
-  console.log("Titles error:", titlesError);
+  console.log("Final departments array:", departments);
+  console.log("Final titles array:", titles);
+  console.log("Departments loading:", departmentsLoading);
+  console.log("Titles loading:", titlesLoading);
 
   const handleViewEmployee = (employee: Employee) => {
     // TODO: Implement employee detail view
