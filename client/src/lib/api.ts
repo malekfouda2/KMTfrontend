@@ -155,25 +155,25 @@ class ApiClient {
   // Missions
   async getMissions(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Missions${queryString}`);
+    return this.request(`/api/Mission${queryString}`);
   }
 
   async createMission(mission: any) {
-    return this.request("/Missions", {
+    return this.request("/api/Mission", {
       method: "POST",
       body: JSON.stringify(mission),
     });
   }
 
   async updateMission(id: string, mission: any) {
-    return this.request(`/Missions/${id}`, {
+    return this.request(`/api/Mission/${id}`, {
       method: "PUT",
       body: JSON.stringify(mission),
     });
   }
 
   async deleteMission(id: string) {
-    return this.request(`/Missions/${id}`, {
+    return this.request(`/api/Mission/${id}`, {
       method: "DELETE",
     });
   }
@@ -195,25 +195,25 @@ class ApiClient {
   // Policies
   async getPolicies(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Policies${queryString}`);
+    return this.request(`/api/Policy${queryString}`);
   }
 
   async createPolicy(policy: any) {
-    return this.request("/Policies", {
+    return this.request("/api/Policy", {
       method: "POST",
       body: JSON.stringify(policy),
     });
   }
 
   async updatePolicy(id: number, policy: any) {
-    return this.request(`/Policies/${id}`, {
+    return this.request(`/api/Policy/${id}`, {
       method: "PUT",
       body: JSON.stringify(policy),
     });
   }
 
   async deletePolicy(id: number) {
-    return this.request(`/Policies/${id}`, {
+    return this.request(`/api/Policy/${id}`, {
       method: "DELETE",
     });
   }
