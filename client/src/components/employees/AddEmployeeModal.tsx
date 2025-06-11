@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -33,14 +35,17 @@ interface AddEmployeeModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface UserFormData {
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-  department: string;
-  isActive: boolean;
-}
+const userFormSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  role: z.string().min(1, "Role is required"),
+  department: z.string().min(1, "Department is required"),
+  isActive: z.boolean().default(true),
+});
+
+type UserFormData = z.infer<typeof userFormSchema>;
 
 export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) => {
   const { toast } = useToast();
@@ -71,6 +76,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
   const form = useForm<UserFormData>({
     defaultValues: {
       name: "",
+      username: "",
       email: "",
       password: "",
       role: "",
@@ -129,6 +135,20 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
 
               <FormField
                 control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter username" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
@@ -168,11 +188,15 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {roles.map((role: any) => (
-                          <SelectItem key={role.id} value={role.name || role.id}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
+                        {roles.length > 0 ? (
+                          roles.map((role: any) => (
+                            <SelectItem key={role.id} value={role.name}>
+                              {role.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-roles" disabled>No roles available</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -193,11 +217,17 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {departments.map((dept: any) => (
-                          <SelectItem key={dept.id} value={dept.name || dept.id}>
-                            {dept.name}
-                          </SelectItem>
-                        ))}
+                        {deptLoading ? (
+                          <SelectItem value="loading" disabled>Loading departments...</SelectItem>
+                        ) : departments.length > 0 ? (
+                          departments.map((dept: any) => (
+                            <SelectItem key={dept.id} value={dept.name}>
+                              {dept.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-departments" disabled>No departments available</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />

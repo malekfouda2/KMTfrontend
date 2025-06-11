@@ -61,9 +61,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/User", (req, res) => {
+    const { name, username, email, password, role, department, isActive } = req.body;
+    
+    // Validate required fields
+    if (!username) {
+      return res.status(400).json({
+        errors: {
+          Username: ["The Username field is required."]
+        },
+        type: "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        title: "One or more validation errors occurred.",
+        status: 400
+      });
+    }
+    
     const newUser = { 
-      id: Date.now(), 
-      ...req.body, 
+      id: Date.now(),
+      name: name || "",
+      username,
+      email: email || "",
+      password: password || "",
+      role: role || "Team Leader",
+      department: department || "Engineering",
+      isActive: isActive !== undefined ? isActive : true,
       createdAt: new Date().toISOString() 
     };
     res.json(newUser);
