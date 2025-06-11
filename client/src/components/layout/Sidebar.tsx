@@ -13,6 +13,8 @@ import {
   TrendingUp,
   User,
   LogOut,
+  Building2,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -63,6 +65,20 @@ const navigationItems: NavigationItem[] = [
     route: "/analytics",
     roles: ["general_manager", "hr_manager"],
   },
+  {
+    id: "departments",
+    label: "Departments",
+    icon: "Building2",
+    route: "/departments",
+    roles: ["general_manager", "hr_manager"],
+  },
+  {
+    id: "roles",
+    label: "Roles",
+    icon: "Shield",
+    route: "/roles",
+    roles: ["general_manager", "hr_manager"],
+  },
 ];
 
 const iconMap = {
@@ -73,6 +89,8 @@ const iconMap = {
   Briefcase,
   Settings,
   TrendingUp,
+  Building2,
+  Shield,
 };
 
 export const Sidebar = () => {
