@@ -121,7 +121,7 @@ export default function Attendance() {
                     <SelectValue placeholder="All Departments" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Departments</SelectItem>
+                    <SelectItem value="all">All Departments</SelectItem>
                     <SelectItem value="engineering">Engineering</SelectItem>
                     <SelectItem value="hr">HR</SelectItem>
                     <SelectItem value="finance">Finance</SelectItem>
