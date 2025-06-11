@@ -30,9 +30,10 @@ type RoleFormData = z.infer<typeof roleSchema>;
 type AssignRoleFormData = z.infer<typeof assignRoleSchema>;
 
 interface Role {
-  id: string;
+  id: number;
   name: string;
   description: string;
+  permissions: string[];
   userCount?: number;
 }
 
@@ -100,7 +101,10 @@ export default function Roles() {
   });
 
   const assignRoleMutation = useMutation({
-    mutationFn: (data: AssignRoleFormData) => apiClient.assignRole(data.userId, data.roleId),
+    mutationFn: (data: AssignRoleFormData) => {
+      const updateData = { role: roles.find(r => r.id.toString() === data.roleId)?.name || data.roleId };
+      return apiClient.updateUser(data.userId, updateData);
+    },
     onSuccess: () => {
       toast({
         title: "Success",
@@ -146,9 +150,9 @@ export default function Roles() {
     assignRoleMutation.mutate(data);
   };
 
-  const handleDeleteRole = (id: string) => {
+  const handleDeleteRole = (id: number) => {
     if (confirm("Are you sure you want to delete this role?")) {
-      deleteRoleMutation.mutate(id);
+      deleteRoleMutation.mutate(id.toString());
     }
   };
 
@@ -223,7 +227,7 @@ export default function Roles() {
                             </FormControl>
                             <SelectContent>
                               {roles.map((role: Role) => (
-                                <SelectItem key={role.id} value={role.id}>
+                                <SelectItem key={role.id} value={role.id.toString()}>
                                   {role.name}
                                 </SelectItem>
                               ))}

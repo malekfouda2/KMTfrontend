@@ -357,6 +357,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Department endpoints
+  app.post("/api/Department", (req, res) => {
+    const { name, description } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({
+        errors: {
+          Name: ["The Name field is required."]
+        },
+        type: "https://tools.ietf.org/html/rfc9110#section-15.5.1", 
+        title: "One or more validation errors occurred.",
+        status: 400
+      });
+    }
+
+    const newDepartment = {
+      id: Date.now(),
+      name,
+      description: description || "",
+      employeeCount: 0,
+      createdAt: new Date().toISOString()
+    };
+    res.json(newDepartment);
+  });
+
+  app.put("/api/Department/:id", (req, res) => {
+    res.json({ id: req.params.id, ...req.body });
+  });
+
+  app.delete("/api/Department/:id", (req, res) => {
+    res.json({ message: "Department deleted successfully" });
+  });
+
   // Dashboard endpoints
   app.get("/api/Dashboard/department-distribution", (req, res) => {
     res.json([
