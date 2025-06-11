@@ -3,13 +3,255 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  // Authentication routes
+  app.post("/api/Auth/login", (req, res) => {
+    const { email, password } = req.body;
+    if (email && password) {
+      res.json({
+        token: "mock-jwt-token",
+        user: {
+          id: 1,
+          name: "Admin User",
+          email: email,
+          role: "Super Admin",
+          department: "Administration",
+          isActive: true
+        }
+      });
+    } else {
+      res.status(401).json({ message: "Invalid credentials" });
+    }
+  });
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  app.post("/api/Auth/logout", (req, res) => {
+    res.json({ message: "Logged out successfully" });
+  });
+
+  // User management
+  app.get("/api/User", (req, res) => {
+    res.json([
+      {
+        id: 1,
+        name: "John Doe",
+        email: "john@company.com",
+        role: "Team Leader",
+        department: "Engineering",
+        isActive: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        name: "Jane Smith", 
+        email: "jane@company.com",
+        role: "HR Manager",
+        department: "Human Resources",
+        isActive: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 3,
+        name: "Mike Wilson",
+        email: "mike@company.com", 
+        role: "General Manager",
+        department: "Finance",
+        isActive: true,
+        createdAt: new Date().toISOString()
+      }
+    ]);
+  });
+
+  app.post("/api/User", (req, res) => {
+    const newUser = { 
+      id: Date.now(), 
+      ...req.body, 
+      createdAt: new Date().toISOString() 
+    };
+    res.json(newUser);
+  });
+
+  app.put("/api/User/:id", (req, res) => {
+    res.json({ id: req.params.id, ...req.body });
+  });
+
+  app.delete("/api/User/:id", (req, res) => {
+    res.json({ message: "User deleted successfully" });
+  });
+
+  // Department management
+  app.get("/api/Department", (req, res) => {
+    res.json([
+      { id: 1, name: "Engineering", description: "Software Development" },
+      { id: 2, name: "Human Resources", description: "HR Management" },
+      { id: 3, name: "Finance", description: "Financial Operations" },
+      { id: 4, name: "Marketing", description: "Marketing & Sales" }
+    ]);
+  });
+
+  // Title management
+  app.get("/api/Title", (req, res) => {
+    res.json([
+      { id: 1, name: "Software Engineer", department: "Engineering" },
+      { id: 2, name: "HR Manager", department: "Human Resources" },
+      { id: 3, name: "Financial Analyst", department: "Finance" },
+      { id: 4, name: "Marketing Specialist", department: "Marketing" }
+    ]);
+  });
+
+  // Attendance management
+  app.get("/api/Attendance", (req, res) => {
+    res.json([
+      {
+        id: 1,
+        employeeId: 1,
+        date: new Date().toISOString(),
+        checkIn: "09:00:00",
+        checkOut: "17:30:00",
+        status: "present",
+        workingHours: "8.5",
+        overtimeHours: "0.5",
+        approvedBy: null,
+        approvedAt: null,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        employeeId: 2,
+        date: new Date().toISOString(),
+        checkIn: "09:15:00",
+        checkOut: "17:00:00",
+        status: "late",
+        workingHours: "7.75",
+        overtimeHours: "0",
+        approvedBy: null,
+        approvedAt: null,
+        createdAt: new Date().toISOString()
+      }
+    ]);
+  });
+
+  app.post("/api/Attendance", (req, res) => {
+    const attendance = { 
+      id: Date.now(), 
+      ...req.body, 
+      createdAt: new Date().toISOString() 
+    };
+    res.json(attendance);
+  });
+
+  // Leave requests
+  app.get("/api/LeaveRequests", (req, res) => {
+    res.json([
+      {
+        id: 1,
+        employeeId: 1,
+        type: "vacation",
+        startDate: "2024-01-15",
+        endDate: "2024-01-20",
+        reason: "Family vacation",
+        status: "pending",
+        approvedBy: null,
+        comments: null,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        employeeId: 2,
+        type: "sick",
+        startDate: "2024-01-10",
+        endDate: "2024-01-12",
+        reason: "Medical appointment",
+        status: "approved",
+        approvedBy: 3,
+        comments: "Approved",
+        createdAt: new Date().toISOString()
+      }
+    ]);
+  });
+
+  app.post("/api/LeaveRequests", (req, res) => {
+    const leaveRequest = { 
+      id: Date.now(), 
+      ...req.body, 
+      status: "pending",
+      createdAt: new Date().toISOString() 
+    };
+    res.json(leaveRequest);
+  });
+
+  // Missions
+  app.get("/api/Mission", (req, res) => {
+    res.json([
+      {
+        id: 1,
+        title: "Client Meeting in Dubai",
+        description: "Quarterly business review with key client",
+        startDate: "2024-01-20",
+        endDate: "2024-01-25",
+        assignedTo: 1,
+        location: "Dubai, UAE",
+        priority: "high",
+        status: "in_progress",
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        title: "Training Workshop",
+        description: "Technical training for new framework",
+        startDate: "2024-01-30",
+        endDate: "2024-02-02",
+        assignedTo: 2,
+        location: "London, UK",
+        priority: "medium",
+        status: "pending",
+        createdAt: new Date().toISOString()
+      }
+    ]);
+  });
+
+  app.post("/api/Mission", (req, res) => {
+    const mission = { 
+      id: Date.now(), 
+      ...req.body, 
+      status: "pending",
+      createdAt: new Date().toISOString() 
+    };
+    res.json(mission);
+  });
+
+  // Policies
+  app.get("/api/Policy", (req, res) => {
+    res.json([
+      {
+        id: 1,
+        title: "Remote Work Policy",
+        description: "Guidelines for remote work arrangements",
+        category: "Work Arrangements",
+        effectiveDate: "2024-01-01",
+        status: "active",
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        title: "Leave Policy",
+        description: "Annual leave and sick leave procedures",
+        category: "Time Off",
+        effectiveDate: "2024-01-01", 
+        status: "active",
+        createdAt: new Date().toISOString()
+      }
+    ]);
+  });
+
+  app.post("/api/Policy", (req, res) => {
+    const policy = { 
+      id: Date.now(), 
+      ...req.body, 
+      status: "active",
+      createdAt: new Date().toISOString() 
+    };
+    res.json(policy);
+  });
 
   const httpServer = createServer(app);
-
   return httpServer;
 }

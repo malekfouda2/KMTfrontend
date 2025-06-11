@@ -42,14 +42,14 @@ export default function Attendance() {
     }),
   });
 
-  const attendanceRecords = attendanceData || [];
+  const attendanceRecords = Array.isArray(attendanceData) ? attendanceData : [];
 
   // Calculate summary stats
   const stats = {
     totalCheckins: attendanceRecords.length,
-    lateArrivals: attendanceRecords.filter(r => r.status === "late").length,
-    pendingApproval: attendanceRecords.filter(r => r.status === "pending").length,
-    overtimeHours: attendanceRecords.reduce((sum, r) => 
+    lateArrivals: attendanceRecords.filter((r: any) => r.status === "late").length,
+    pendingApproval: attendanceRecords.filter((r: any) => r.status === "pending").length,
+    overtimeHours: attendanceRecords.reduce((sum: number, r: any) => 
       sum + (parseFloat(r.overtimeHours?.toString() || "0")), 0
     ),
   };

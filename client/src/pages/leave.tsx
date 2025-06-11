@@ -56,10 +56,12 @@ export default function Leave() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: leaveRequests, isLoading } = useQuery({
+  const { data: leaveRequestsData, isLoading } = useQuery({
     queryKey: ["/api/LeaveRequests"],
     queryFn: () => apiClient.getLeaveRequests(),
   });
+
+  const leaveRequests = Array.isArray(leaveRequestsData) ? leaveRequestsData : [];
 
   const form = useForm<LeaveFormData>({
     defaultValues: {
