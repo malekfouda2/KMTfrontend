@@ -47,8 +47,6 @@ export default function Employees() {
         throw error;
       }
     },
-    staleTime: 0,
-    cacheTime: 0,
     refetchOnMount: true,
   });
 
