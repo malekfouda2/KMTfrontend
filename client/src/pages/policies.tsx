@@ -138,7 +138,7 @@ export default function Policies() {
                 </DialogDescription>
               </DialogHeader>
               <CreatePolicyForm 
-                onSubmit={(data) => createPolicyMutation.mutate(data)}
+                onSubmit={(data: any) => createPolicyMutation.mutate(data)}
                 isLoading={createPolicyMutation.isPending}
               />
             </DialogContent>
