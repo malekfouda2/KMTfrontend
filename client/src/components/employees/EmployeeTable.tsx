@@ -181,26 +181,26 @@ export const EmployeeTable = ({
       </div>
 
       {/* Mobile Card Layout */}
-      <div className="md:hidden space-y-4">
+      <div className="md:hidden space-y-3">
         {employees.map((employee) => (
-          <div key={employee.id} className="bg-white rounded-lg border p-4 shadow-sm">
+          <div key={employee.id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-200">
             <div className="flex items-start space-x-3">
-              <Avatar>
-                <AvatarFallback className="bg-gray-300 text-gray-600">
+              <Avatar className="w-12 h-12">
+                <AvatarFallback className="bg-primary text-white text-sm font-medium">
                   {getInitials(employee.firstName, employee.lastName)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-900 truncate">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 truncate text-sm">
                       {employee.firstName} {employee.lastName}
                     </h3>
-                    <p className="text-sm text-gray-500 truncate">{employee.email}</p>
+                    <p className="text-xs text-gray-500 truncate mt-1">{employee.email}</p>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-2">
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -223,29 +223,25 @@ export const EmployeeTable = ({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-500">Department:</span>
-                    <p className="font-medium capitalize">{employee.department}</p>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Department:</span>
+                    <p className="font-medium text-xs capitalize">{employee.department}</p>
                   </div>
-                  <div>
-                    <span className="text-gray-500">Position:</span>
-                    <p className="font-medium">{employee.position}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Position:</span>
+                    <p className="font-medium text-xs">{employee.position}</p>
                   </div>
-                  <div>
-                    <span className="text-gray-500">Type:</span>
+                  <div className="flex items-center justify-between pt-2">
                     <Badge
                       variant="secondary"
-                      className={getEmployeeTypeColor(employee.employeeType)}
+                      className={`${getEmployeeTypeColor(employee.employeeType)} text-xs`}
                     >
                       {employee.employeeType}
                     </Badge>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Status:</span>
                     <Badge
                       variant="secondary"
-                      className={getStatusColor(employee.isActive)}
+                      className={`${getStatusColor(employee.isActive)} text-xs`}
                     >
                       {employee.isActive !== null ? (employee.isActive ? "Active" : "Inactive") : "Unknown"}
                     </Badge>

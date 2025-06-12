@@ -122,7 +122,7 @@ export const Sidebar = () => {
     <Button
       variant="ghost"
       size="sm"
-      className="lg:hidden fixed top-4 left-4 z-50 bg-white shadow-md"
+      className="lg:hidden fixed top-4 left-4 z-50 bg-white shadow-lg border border-gray-200 rounded-lg hover:shadow-xl transition-all duration-200"
       onClick={toggleMobileMenu}
     >
       {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -143,9 +143,9 @@ export const Sidebar = () => {
       
       {/* Sidebar */}
       <div className={cn(
-        "w-64 bg-white shadow-lg flex flex-col h-full transition-transform duration-300 ease-in-out",
-        "lg:translate-x-0 lg:static lg:z-auto",
-        "fixed inset-y-0 left-0 z-50",
+        "w-64 bg-white shadow-lg flex flex-col transition-transform duration-300 ease-in-out",
+        "lg:translate-x-0 lg:static lg:z-auto lg:h-full",
+        "fixed inset-y-0 left-0 z-50 h-screen overflow-y-auto",
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Close button for mobile */}
@@ -173,8 +173,8 @@ export const Sidebar = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4">
-          <ul className="space-y-2">
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <ul className="space-y-1">
             {filteredNavItems.map((item) => {
               const Icon = iconMap[item.icon as keyof typeof iconMap];
               const isActive = location === item.route;
@@ -184,13 +184,13 @@ export const Sidebar = () => {
                   <Link href={item.route}>
                     <div
                       className={cn(
-                        "flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer",
-                        isActive && "bg-gray-100 text-primary"
+                        "flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 cursor-pointer",
+                        isActive && "bg-primary text-white shadow-sm"
                       )}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <Icon className="w-5 h-5" />
-                      <span className="ml-3">{item.label}</span>
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <span className="ml-3 text-sm font-medium">{item.label}</span>
                     </div>
                   </Link>
                 </li>

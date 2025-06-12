@@ -27,26 +27,26 @@ export const StatsCard = ({
   };
 
   return (
-    <Card>
-      <CardContent className="p-6">
+    <Card className="hover:shadow-md transition-all duration-200">
+      <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-600">{title}</p>
-            <p className="text-3xl font-bold text-secondary">{value}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{title}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-secondary mt-1">{value}</p>
           </div>
-          <div className={`w-12 h-12 bg-opacity-10 rounded-lg flex items-center justify-center ${iconColor.replace('text-', 'bg-')}`}>
-            <Icon className={`w-6 h-6 ${iconColor}`} />
+          <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-opacity-10 rounded-lg flex items-center justify-center flex-shrink-0 ${iconColor.replace('text-', 'bg-')}`}>
+            <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${iconColor}`} />
           </div>
         </div>
         {(change || subtitle) && (
-          <div className="mt-4 flex items-center">
+          <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
             {change && (
-              <span className={`text-sm font-medium ${changeColorMap[changeType]}`}>
+              <span className={`text-xs sm:text-sm font-medium ${changeColorMap[changeType]}`}>
                 {change}
               </span>
             )}
             {subtitle && (
-              <span className="text-gray-500 text-sm ml-2">{subtitle}</span>
+              <span className="text-gray-500 text-xs sm:text-sm sm:ml-2">{subtitle}</span>
             )}
           </div>
         )}
