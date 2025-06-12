@@ -161,17 +161,12 @@ export default function Missions() {
   });
 
   const onSubmit = (data: MissionFormData) => {
-    // Convert time strings to C# TimeSpan format
-    const formatTimeSpan = (time: string) => {
-      return `${time}:00`; // Convert "HH:mm" to "HH:mm:ss"
-    };
-    
     const formattedData = {
       description: data.description,
       descriptionAr: data.descriptionAr,
-      missionDate: data.missionDate,
-      startTime: formatTimeSpan(data.startTime),
-      ...(data.endTime && { endTime: formatTimeSpan(data.endTime) }),
+      missionDate: new Date(data.missionDate).toISOString().split('T')[0], // Convert to YYYY-MM-DD format
+      startTime: `${data.startTime}:00`, // Convert "HH:mm" to "HH:mm:ss" string
+      ...(data.endTime && { endTime: `${data.endTime}:00` }),
       location: data.location,
     };
     
