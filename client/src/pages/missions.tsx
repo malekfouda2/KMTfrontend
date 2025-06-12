@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { apiClient } from "@/lib/api";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, MapPin, Calendar, User, Truck, Edit, Trash2, Loader2, CheckCircle, XCircle } from "lucide-react";
 
+const missionSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  assignedTo: z.string().min(1, "Assignee is required"),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().optional(),
+  priority: z.string().min(1, "Priority is required"),
+  location: z.string().min(1, "Location is required"),
+});
+
+type MissionFormData = z.infer<typeof missionSchema>;
+
 export default function Missions() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filters, setFilters] = useState({
@@ -53,6 +67,19 @@ export default function Missions() {
   const [search, setSearch] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const form = useForm<MissionFormData>({
+    resolver: zodResolver(missionSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      assignedTo: "",
+      startDate: "",
+      endDate: "",
+      priority: "",
+      location: "",
+    },
+  });
 
   const { data: missionsData, isLoading } = useQuery({
     queryKey: ["/api/Missions", filters, search],
@@ -116,10 +143,11 @@ export default function Missions() {
   const users = Array.isArray(usersData) ? usersData : [];
 
   const createMissionMutation = useMutation({
-    mutationFn: (mission: any) => apiClient.createMission(mission),
+    mutationFn: (mission: MissionFormData) => apiClient.createMission(mission),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/Missions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/Mission"] });
       setShowCreateModal(false);
+      form.reset();
       toast({
         title: "Success",
         description: "Mission created successfully",
@@ -133,6 +161,10 @@ export default function Missions() {
       });
     },
   });
+
+  const onSubmit = (data: MissionFormData) => {
+    createMissionMutation.mutate(data);
+  };
 
   const assignMissionMutation = useMutation({
     mutationFn: ({ id, userId }: { id: string; userId: string }) => 
@@ -219,73 +251,141 @@ export default function Missions() {
                   Fill in the details for the new mission
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Mission Title</Label>
-                    <Input placeholder="Enter mission title" />
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mission Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter mission title" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="assignedTo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Assigned To</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select employee" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {users.map((user: any) => (
+                                <SelectItem key={user.id} value={user.id.toString()}>
+                                  {user.firstName} {user.lastName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Assigned To</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select employee" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {users.map((user: any) => (
-                          <SelectItem key={user.id} value={user.id.toString()}>
-                            {user.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Mission description" rows={3} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="startDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start Date</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>End Date</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="priority"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Priority</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select priority" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                              <SelectItem value="urgent">Urgent</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea placeholder="Mission description" rows={3} />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Start Date</Label>
-                    <Input type="date" />
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Location</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Mission location" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowCreateModal(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={createMissionMutation.isPending}>
+                      {createMissionMutation.isPending && (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      )}
+                      Create Mission
+                    </Button>
                   </div>
-                  <div className="space-y-2">
-                    <Label>End Date</Label>
-                    <Input type="date" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Priority</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Location</Label>
-                  <Input placeholder="Mission location" />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowCreateModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit">
-                    Create Mission
-                  </Button>
-                </div>
-              </div>
+                </form>
+              </Form>
             </DialogContent>
           </Dialog>
         </div>
