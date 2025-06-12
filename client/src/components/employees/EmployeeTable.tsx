@@ -48,7 +48,7 @@ export const EmployeeTable = ({
   const queryClient = useQueryClient();
 
   const deleteEmployeeMutation = useMutation({
-    mutationFn: (id: number) => apiClient.deleteEmployee(id),
+    mutationFn: (id: number) => apiClient.deleteEmployee(id.toString()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/Employees"] });
       toast({

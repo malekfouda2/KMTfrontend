@@ -85,7 +85,7 @@ export default function Policies() {
   });
 
   const deletePolicyMutation = useMutation({
-    mutationFn: (id: number) => apiClient.deletePolicy(id),
+    mutationFn: (id: number) => apiClient.deletePolicy(id.toString()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/Policies"] });
       toast({

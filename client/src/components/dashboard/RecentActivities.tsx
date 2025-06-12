@@ -12,17 +12,29 @@ import {
   UserPlus,
 } from "lucide-react";
 
+interface Activity {
+  id: number;
+  type: string;
+  title?: string;
+  description?: string;
+  time?: string;
+  timestamp?: string;
+  user: string | { name: string; initials: string };
+}
+
 const activityIconMap = {
   checkin: UserCheck,
   leave_request: Calendar,
-  mission: Briefcase,
+  mission_assignment: Briefcase,
+  attendance_approval: UserCheck,
   new_employee: UserPlus,
 };
 
 const activityTypeMap = {
   checkin: { label: "Check-in", color: "bg-accent" },
   leave_request: { label: "Leave Request", color: "bg-warning" },
-  mission: { label: "Mission", color: "bg-info" },
+  mission_assignment: { label: "Mission", color: "bg-info" },
+  attendance_approval: { label: "Attendance", color: "bg-success" },
   new_employee: { label: "New Employee", color: "bg-accent" },
 };
 
@@ -99,9 +111,15 @@ export const RecentActivities = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {activityData.map((activity, index) => {
-            const Icon = activityIconMap[activity.type as keyof typeof activityIconMap];
-            const typeConfig = activityTypeMap[activity.type as keyof typeof activityTypeMap];
+          {activityData.map((activity: any, index) => {
+            const Icon = activityIconMap[activity.type as keyof typeof activityIconMap] || UserCheck;
+            const typeConfig = activityTypeMap[activity.type as keyof typeof activityTypeMap] || {
+              label: "Activity",
+              color: "bg-gray-500"
+            };
+
+            const title = activity.title || activity.description || "Activity";
+            const timeDisplay = activity.time || (activity.timestamp ? new Date(activity.timestamp).toLocaleString() : "");
 
             return (
               <div
@@ -117,9 +135,9 @@ export const RecentActivities = () => {
                 </Avatar>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-secondary">
-                    {activity.title}
+                    {title}
                   </p>
-                  <p className="text-xs text-gray-500">{activity.time}</p>
+                  <p className="text-xs text-gray-500">{timeDisplay}</p>
                 </div>
                 <Badge
                   variant="secondary"
