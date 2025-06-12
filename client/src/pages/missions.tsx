@@ -161,7 +161,25 @@ export default function Missions() {
   });
 
   const onSubmit = (data: MissionFormData) => {
-    createMissionMutation.mutate(data);
+    // Convert time strings to C# TimeSpan format
+    const formatTimeSpan = (time: string) => {
+      if (!time) return null;
+      return `${time}:00`; // Convert "HH:mm" to "HH:mm:ss"
+    };
+    
+    const formattedData = {
+      description: data.description,
+      descriptionAr: data.descriptionAr,
+      missionDate: data.missionDate, // Keep as date string, backend will parse
+      startTime: formatTimeSpan(data.startTime),
+      endTime: data.endTime ? formatTimeSpan(data.endTime) : null,
+      location: data.location,
+    };
+    
+    console.log('Form data before submission:', data);
+    console.log('Formatted data for backend:', formattedData);
+    
+    createMissionMutation.mutate(formattedData);
   };
 
   const assignMissionMutation = useMutation({

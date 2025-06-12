@@ -179,6 +179,19 @@ class KMTApiClient {
   }
 
   async createMission(mission: any) {
+    console.log('Creating mission with data:', mission);
+    const token = authService.getToken();
+    console.log('Using token:', token ? 'Present' : 'Missing');
+    
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        console.log('Decoded token payload:', decoded);
+      } catch (e) {
+        console.error('Failed to decode token:', e);
+      }
+    }
+    
     return this.request<any>("/Mission", {
       method: "POST",
       body: JSON.stringify(mission),
