@@ -36,9 +36,10 @@ export default function Departments() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: departmentsData = [], isLoading } = useQuery({
+  const { data: departmentsData = [], isLoading, error } = useQuery({
     queryKey: ['/api/Department'],
     queryFn: () => apiClient.getDepartments(),
+    retry: false,
   });
 
   const departments = Array.isArray(departmentsData) ? departmentsData as Department[] : [];
@@ -54,7 +55,13 @@ export default function Departments() {
   const createDepartmentMutation = useMutation({
     mutationFn: (data: DepartmentFormData) => {
       console.log("Creating department with data:", data);
-      return apiClient.createDepartment(data);
+      // The KMT backend might expect different field names
+      const departmentData = {
+        Name: data.name,
+        Description: data.description
+      };
+      console.log("Sending to API:", departmentData);
+      return apiClient.createDepartment(departmentData);
     },
     onSuccess: (response) => {
       console.log("Department created successfully:", response);

@@ -29,6 +29,12 @@ class ApiClient {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        url,
+        body: errorText
+      });
       throw new Error(`${response.status}: ${errorText || response.statusText}`);
     }
 
