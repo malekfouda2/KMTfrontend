@@ -199,6 +199,11 @@
     @apply bg-success text-white hover:bg-success/90 focus:ring-2 focus:ring-success focus:ring-offset-2;
   }
 
+  /* Override text-secondary to be black */
+  .text-secondary {
+    color: #000000 !important;
+  }
+
   .btn-warning {
     @apply bg-warning text-white hover:bg-warning/90 focus:ring-2 focus:ring-warning focus:ring-offset-2;
   }
