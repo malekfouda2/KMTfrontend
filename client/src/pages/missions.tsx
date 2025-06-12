@@ -47,16 +47,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, MapPin, Calendar, User, Truck, Edit, Trash2, Loader2, CheckCircle, XCircle } from "lucide-react";
 
 const missionSchema = z.object({
-  name: z.string().min(1, "Mission name is required"),
-  description: z.string().min(1, "Description is required"),
-  assignedUserId: z.string().min(1, "Assignee is required"),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().min(1, "End date is required"),
-  priority: z.enum(["Low", "Medium", "High", "Urgent"], {
-    required_error: "Priority is required",
-  }),
-  location: z.string().min(1, "Location is required"),
-  status: z.enum(["Pending", "InProgress", "Completed", "Cancelled"]).default("Pending"),
+  description: z.string().min(1, "Description is required").max(500, "Description must be 500 characters or less"),
+  descriptionAr: z.string().min(1, "Arabic description is required").max(500, "Arabic description must be 500 characters or less"),
+  missionDate: z.string().min(1, "Mission date is required"),
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().optional(),
+  location: z.string().min(1, "Location is required").max(200, "Location must be 200 characters or less"),
 });
 
 type MissionFormData = z.infer<typeof missionSchema>;
@@ -74,14 +70,12 @@ export default function Missions() {
   const form = useForm<MissionFormData>({
     resolver: zodResolver(missionSchema),
     defaultValues: {
-      name: "",
       description: "",
-      assignedUserId: "",
-      startDate: "",
-      endDate: "",
-      priority: "Medium",
+      descriptionAr: "",
+      missionDate: "",
+      startTime: "",
+      endTime: "",
       location: "",
-      status: "Pending",
     },
   });
 
