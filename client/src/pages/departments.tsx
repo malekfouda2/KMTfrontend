@@ -41,7 +41,7 @@ export default function Departments() {
     queryFn: () => apiClient.getDepartments(),
   });
 
-  const departments = departmentsData as Department[];
+  const departments = Array.isArray(departmentsData) ? departmentsData as Department[] : [];
 
   const form = useForm<DepartmentFormData>({
     resolver: zodResolver(departmentSchema),
@@ -182,7 +182,7 @@ export default function Departments() {
 
         {/* Departments Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(departments as Department[]).map((department: Department) => (
+          {departments.map((department: Department) => (
             <Card key={department.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">

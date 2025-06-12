@@ -61,8 +61,8 @@ export default function Roles() {
     queryFn: () => apiClient.getUsers(),
   });
 
-  const roles = rolesData as Role[];
-  const users = usersData as User[];
+  const roles = Array.isArray(rolesData) ? rolesData as Role[] : [];
+  const users = Array.isArray(usersData) ? usersData as User[] : [];
 
   const roleForm = useForm<RoleFormData>({
     resolver: zodResolver(roleSchema),
