@@ -67,7 +67,9 @@ export const EmployeeTable = ({
   });
 
   const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    const first = firstName && firstName.length > 0 ? firstName[0] : '';
+    const last = lastName && lastName.length > 0 ? lastName[0] : '';
+    return `${first}${last}`.toUpperCase();
   };
 
   const getEmployeeTypeColor = (type: string) => {

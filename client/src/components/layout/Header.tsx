@@ -12,7 +12,7 @@ export const Header = ({ title, breadcrumb = "Home" }: HeaderProps) => {
     <header className="bg-white shadow-sm border-b px-6 py-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-secondary">{title}</h1>
+          <h1 className="text-2xl font-bold text-black">{title}</h1>
           <nav className="text-sm text-gray-500 mt-1">
             <span>{breadcrumb} / {title}</span>
           </nav>
