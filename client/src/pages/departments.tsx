@@ -35,7 +35,6 @@ export default function Departments() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
-  const [localDepartments, setLocalDepartments] = useState<Department[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -54,7 +53,7 @@ export default function Departments() {
     retry: false,
   });
 
-  const departments = Array.isArray(departmentsData) ? departmentsData as Department[] : localDepartments;
+  const departments = Array.isArray(departmentsData) ? departmentsData as Department[] : [];
 
   const form = useForm<DepartmentFormData>({
     resolver: zodResolver(departmentSchema),
@@ -81,17 +80,6 @@ export default function Departments() {
     },
     onSuccess: (response) => {
       console.log("Department created successfully:", response);
-      
-      // Add the created department to local state since GET endpoint returns 401
-      const newDepartment: Department = {
-        id: response.id || Date.now(),
-        name: response.name || form.getValues().name,
-        description: response.description || form.getValues().description,
-        employeeCount: 0
-      };
-      
-      setLocalDepartments(prev => [...prev, newDepartment]);
-      
       toast({
         title: "Success",
         description: "Department created successfully",

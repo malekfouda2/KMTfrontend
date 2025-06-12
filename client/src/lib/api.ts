@@ -40,8 +40,58 @@ class ApiClient {
         status: response.status,
         statusText: response.statusText,
         url,
+        method: options.method || 'GET',
+        headers: Object.fromEntries(Object.entries(config.headers || {})),
         body: errorText
       });
+      
+      // For Department GET 401, try different authentication approaches
+      if (response.status === 401 && endpoint === '/Department' && (!options.method || options.method === 'GET')) {
+        console.log('Trying alternative authentication for Department GET...');
+        
+        // Try 1: Without Content-Type header
+        const retryConfig1 = { ...config };
+        if (retryConfig1.headers && typeof retryConfig1.headers === 'object') {
+          delete (retryConfig1.headers as any)['Content-Type'];
+        }
+        const retryResponse1 = await fetch(url, retryConfig1);
+        
+        if (retryResponse1.ok) {
+          console.log('Success: Department GET worked without Content-Type header');
+          const contentType = retryResponse1.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            return retryResponse1.json();
+          }
+          return retryResponse1.text() as any;
+        }
+        
+        // Try 2: Alternative endpoint path
+        const altUrl = url.replace('/api/Department', '/api/department');
+        const retryResponse2 = await fetch(altUrl, retryConfig1);
+        
+        if (retryResponse2.ok) {
+          console.log('Success: Department GET worked with lowercase endpoint');
+          const contentType = retryResponse2.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            return retryResponse2.json();
+          }
+          return retryResponse2.text() as any;
+        }
+        
+        // Try 3: Check if it's a different endpoint name
+        const altUrl2 = url.replace('/api/Department', '/api/Departments');
+        const retryResponse3 = await fetch(altUrl2, retryConfig1);
+        
+        if (retryResponse3.ok) {
+          console.log('Success: Department GET worked with plural endpoint');
+          const contentType = retryResponse3.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            return retryResponse3.json();
+          }
+          return retryResponse3.text() as any;
+        }
+      }
+      
       throw new Error(`${response.status}: ${errorText || response.statusText}`);
     }
 
@@ -234,7 +284,14 @@ class ApiClient {
   // Departments
   async getDepartments(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Department${queryString}`);
+    const token = authService.getToken();
+    console.log('getDepartments token check:', { hasToken: !!token, tokenPreview: token?.substring(0, 50) + '...' });
+    
+    return this.request(`/Department${queryString}`, {
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
   }
 
   async createDepartment(department: any) {
