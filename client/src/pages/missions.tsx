@@ -47,13 +47,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, MapPin, Calendar, User, Truck, Edit, Trash2, Loader2, CheckCircle, XCircle } from "lucide-react";
 
 const missionSchema = z.object({
-  title: z.string().min(1, "Title is required"),
+  name: z.string().min(1, "Mission name is required"),
   description: z.string().min(1, "Description is required"),
-  assignedTo: z.string().min(1, "Assignee is required"),
+  assignedUserId: z.string().min(1, "Assignee is required"),
   startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().optional(),
-  priority: z.string().min(1, "Priority is required"),
+  endDate: z.string().min(1, "End date is required"),
+  priority: z.enum(["Low", "Medium", "High", "Urgent"], {
+    required_error: "Priority is required",
+  }),
   location: z.string().min(1, "Location is required"),
+  status: z.enum(["Pending", "InProgress", "Completed", "Cancelled"]).default("Pending"),
 });
 
 type MissionFormData = z.infer<typeof missionSchema>;
