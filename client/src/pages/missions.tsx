@@ -74,18 +74,19 @@ export default function Missions() {
   const form = useForm<MissionFormData>({
     resolver: zodResolver(missionSchema),
     defaultValues: {
-      title: "",
+      name: "",
       description: "",
-      assignedTo: "",
+      assignedUserId: "",
       startDate: "",
       endDate: "",
-      priority: "",
+      priority: "Medium",
       location: "",
+      status: "Pending",
     },
   });
 
   const { data: missionsData, isLoading } = useQuery({
-    queryKey: ["/api/Missions", filters, search],
+    queryKey: ["/api/Mission", filters, search],
     queryFn: async () => {
       try {
         const result = await apiClient.getMissions({ ...filters, search });
@@ -259,12 +260,12 @@ export default function Missions() {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="title"
+                      name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Mission Title</FormLabel>
+                          <FormLabel>Mission Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter mission title" {...field} />
+                            <Input placeholder="Enter mission name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -272,7 +273,7 @@ export default function Missions() {
                     />
                     <FormField
                       control={form.control}
-                      name="assignedTo"
+                      name="assignedUserId"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Assigned To</FormLabel>
@@ -348,10 +349,10 @@ export default function Missions() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="low">Low</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="high">High</SelectItem>
-                              <SelectItem value="urgent">Urgent</SelectItem>
+                              <SelectItem value="Low">Low</SelectItem>
+                              <SelectItem value="Medium">Medium</SelectItem>
+                              <SelectItem value="High">High</SelectItem>
+                              <SelectItem value="Urgent">Urgent</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -433,14 +434,14 @@ export default function Missions() {
                         <TableCell>
                           <div>
                             <div className="font-medium text-gray-900">
-                              {mission.title}
+                              {mission.name}
                             </div>
                             <div className="text-sm text-gray-500">
                               {mission.description}
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>Employee {mission.assignedTo}</TableCell>
+                        <TableCell>Employee {mission.assignedUserId}</TableCell>
                         <TableCell>
                           <div className="flex items-center">
                             <MapPin className="w-4 h-4 mr-1 text-gray-400" />
