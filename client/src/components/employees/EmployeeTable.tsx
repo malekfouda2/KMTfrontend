@@ -83,7 +83,7 @@ export const EmployeeTable = ({
     }
   };
 
-  const getStatusColor = (isActive: boolean) => {
+  const getStatusColor = (isActive: boolean | null) => {
     return isActive
       ? "bg-green-100 text-green-800"
       : "bg-red-100 text-red-800";
@@ -140,7 +140,7 @@ export const EmployeeTable = ({
                     variant="secondary"
                     className={getStatusColor(employee.isActive)}
                   >
-                    {employee.isActive ? "Active" : "Inactive"}
+                    {employee.isActive !== null ? (employee.isActive ? "Active" : "Inactive") : "Unknown"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">

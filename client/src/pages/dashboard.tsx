@@ -29,18 +29,8 @@ export default function Dashboard() {
     overtimeHours: 23.5,
   };
 
-  const dashboardStats = stats || defaultStats;
-  
-  // Type guard to ensure we have the proper stats structure
-  const safeStats = {
-    totalEmployees: dashboardStats?.totalEmployees || defaultStats.totalEmployees,
-    presentToday: dashboardStats?.presentToday || defaultStats.presentToday,
-    onLeave: dashboardStats?.onLeave || defaultStats.onLeave,
-    activeMissions: dashboardStats?.activeMissions || defaultStats.activeMissions,
-    attendanceRate: dashboardStats?.attendanceRate || defaultStats.attendanceRate,
-    pendingApprovals: dashboardStats?.pendingApprovals || defaultStats.pendingApprovals,
-    overtimeHours: dashboardStats?.overtimeHours || defaultStats.overtimeHours,
-  };
+  // Use defaultStats since dashboard endpoints are not implemented in KMT backend
+  const dashboardStats = defaultStats;
 
   return (
     <MainLayout title="Dashboard" breadcrumb="Home">
@@ -57,7 +47,7 @@ export default function Dashboard() {
             <>
               <StatsCard
                 title="Total Employees"
-                value={safeStats.totalEmployees}
+                value={dashboardStats.totalEmployees}
                 change="+12%"
                 changeType="positive"
                 subtitle="from last month"
@@ -66,8 +56,8 @@ export default function Dashboard() {
               />
               <StatsCard
                 title="Present Today"
-                value={safeStats.presentToday}
-                change={`${safeStats.attendanceRate}%`}
+                value={dashboardStats.presentToday}
+                change={`${dashboardStats.attendanceRate}%`}
                 changeType="positive"
                 subtitle="attendance rate"
                 icon={CheckCircle}
@@ -75,7 +65,7 @@ export default function Dashboard() {
               />
               <StatsCard
                 title="On Leave"
-                value={safeStats.onLeave}
+                value={dashboardStats.onLeave}
                 change="3.2%"
                 changeType="neutral"
                 subtitle="of workforce"
@@ -84,8 +74,8 @@ export default function Dashboard() {
               />
               <StatsCard
                 title="Active Missions"
-                value={safeStats.activeMissions}
-                change={`${safeStats.pendingApprovals} pending`}
+                value={dashboardStats.activeMissions}
+                change={`${dashboardStats.pendingApprovals} pending`}
                 changeType="neutral"
                 subtitle="approval"
                 icon={Briefcase}
