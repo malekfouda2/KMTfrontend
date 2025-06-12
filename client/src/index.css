@@ -204,6 +204,25 @@
     color: #000000 !important;
   }
 
+  /* Mobile responsive utilities */
+  @media (max-width: 768px) {
+    .mobile-padding {
+      @apply px-3 py-2;
+    }
+    
+    .mobile-text {
+      @apply text-sm;
+    }
+    
+    .mobile-grid {
+      @apply grid-cols-1;
+    }
+    
+    .mobile-stack {
+      @apply flex-col space-y-3 space-x-0;
+    }
+  }
+
   .btn-warning {
     @apply bg-warning text-white hover:bg-warning/90 focus:ring-2 focus:ring-warning focus:ring-offset-2;
   }

@@ -167,14 +167,14 @@ export default function Departments() {
     <MainLayout title="Departments" breadcrumb="Departments" requiredRoles={["general_manager", "hr_manager"]}>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-black">Departments</h1>
-            <p className="text-gray-600">Manage organizational departments</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-black">Departments</h1>
+            <p className="text-sm sm:text-base text-gray-600">Manage organizational departments</p>
           </div>
           <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Department
               </Button>
@@ -265,7 +265,7 @@ export default function Departments() {
         )}
 
         {/* Departments Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {departments.map((department: Department) => (
             <Card key={department.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
