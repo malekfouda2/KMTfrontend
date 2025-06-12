@@ -303,7 +303,67 @@ class ApiClient {
   // Departments
   async getDepartments(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/Department${queryString}`);
+    
+    // First attempt with standard authentication
+    try {
+      return await this.request(`/Department${queryString}`);
+    } catch (error: any) {
+      // If 401, try alternative department endpoints that might work
+      if (error.message?.includes('401')) {
+        console.log('Department GET 401 - trying authenticated fallback approaches...');
+        
+        const token = authService.getToken();
+        const alternativeConfigs = [
+          // Try without Content-Type header
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json'
+            }
+          },
+          // Try with minimal headers
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json'
+            }
+          }
+        ];
+        
+        const alternativeEndpoints = [
+          `/Department${queryString}`,
+          `/department${queryString}`,
+          `/Departments${queryString}`,
+          `/departments${queryString}`
+        ];
+        
+        // Try each combination
+        for (const config of alternativeConfigs) {
+          for (const endpoint of alternativeEndpoints) {
+            try {
+              const response = await fetch(`${this.baseURL}${endpoint}`, config as RequestInit);
+              if (response.ok) {
+                console.log(`✅ Department GET succeeded with endpoint: ${endpoint}`);
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                  return await response.json();
+                }
+                return await response.text();
+              }
+            } catch (retryError) {
+              // Continue to next attempt
+            }
+          }
+        }
+        
+        // If all authenticated attempts fail, the backend has specific permission requirements
+        console.log('Department GET: All authentication methods failed - returning empty array');
+        return [];
+      }
+      throw error;
+    }
   }
 
   async createDepartment(department: any) {

@@ -48,9 +48,14 @@ export default function Departments() {
       } catch (error: any) {
         console.error('Error fetching departments:', error);
         
-        // If authentication fails with 401, return empty array to allow UI to function
+        // If authentication fails with 401, the backend requires specific permissions
         if (error.message?.includes('401')) {
-          console.log('Department GET returned 401 - backend authentication issue detected');
+          console.log('Department GET returned 401 - authentication issue with KMT backend');
+          toast({
+            title: "Authentication Issue",
+            description: "Unable to fetch departments from backend. Department creation will still work.",
+            variant: "destructive",
+          });
           return [];
         }
         throw error;
