@@ -118,8 +118,8 @@ export const RecentActivities = () => {
               color: "bg-gray-500"
             };
 
-            const title = activity.title || activity.description || "Activity";
-            const timeDisplay = activity.time || (activity.timestamp ? new Date(activity.timestamp).toLocaleString() : "");
+            const title = (activity as any).title || (activity as any).description || "Activity";
+            const timeDisplay = (activity as any).time || ((activity as any).timestamp ? new Date((activity as any).timestamp).toLocaleString() : "");
 
             return (
               <div
