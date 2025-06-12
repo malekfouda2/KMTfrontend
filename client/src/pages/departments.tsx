@@ -52,8 +52,12 @@ export default function Departments() {
   });
 
   const createDepartmentMutation = useMutation({
-    mutationFn: (data: DepartmentFormData) => apiClient.createDepartment(data),
-    onSuccess: () => {
+    mutationFn: (data: DepartmentFormData) => {
+      console.log("Creating department with data:", data);
+      return apiClient.createDepartment(data);
+    },
+    onSuccess: (response) => {
+      console.log("Department created successfully:", response);
       toast({
         title: "Success",
         description: "Department created successfully",
@@ -63,6 +67,7 @@ export default function Departments() {
       form.reset();
     },
     onError: (error: Error) => {
+      console.error("Department creation error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create department",
