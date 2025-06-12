@@ -50,13 +50,21 @@ class ApiClient {
       throw new Error(`${response.status}: ${errorText || response.statusText}`);
     }
 
-    // Handle empty responses
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
-      return response.json();
+    try {
+      const data = await response.json();
+      console.log('API Response:', { url, data });
+      
+      // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+      if (data && typeof data === 'object' && 'data' in data) {
+        return data.data;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Failed to parse JSON response:', error);
+      // Handle non-JSON responses
+      return response.text() as any;
     }
-
-    return response.text() as any;
   }
 
   // Authentication
@@ -143,28 +151,41 @@ class ApiClient {
     });
   }
 
-  // Leave Requests
+  // Leave Requests - Updated for KMT backend
   async getLeaveRequests(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request(`/LeaveRequests${queryString}`);
+    return this.request(`/LeaveRequest${queryString}`);
   }
 
   async createLeaveRequest(request: any) {
-    return this.request("/LeaveRequests", {
+    return this.request("/LeaveRequest", {
       method: "POST",
       body: JSON.stringify(request),
     });
   }
 
+  async updateLeaveRequest(id: string, request: any) {
+    return this.request(`/LeaveRequest/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(request),
+    });
+  }
+
+  async deleteLeaveRequest(id: string) {
+    return this.request(`/LeaveRequest/${id}`, {
+      method: "DELETE",
+    });
+  }
+
   async approveLeaveRequest(id: number, comments?: string) {
-    return this.request(`/LeaveRequests/${id}/approve`, {
+    return this.request(`/LeaveRequest/${id}/approve`, {
       method: "PATCH",
       body: JSON.stringify({ comments }),
     });
   }
 
   async rejectLeaveRequest(id: number, comments?: string) {
-    return this.request(`/LeaveRequests/${id}/reject`, {
+    return this.request(`/LeaveRequest/${id}/reject`, {
       method: "PATCH",
       body: JSON.stringify({ comments }),
     });
@@ -197,14 +218,14 @@ class ApiClient {
   }
 
   async assignMission(id: string, userId: string) {
-    return this.request(`/Missions/${id}/assign`, {
+    return this.request(`/Mission/${id}/assign`, {
       method: "PATCH",
       body: JSON.stringify({ userId }),
     });
   }
 
   async updateMissionTransportation(id: string, transportationDetails: any) {
-    return this.request(`/Missions/${id}/transportation`, {
+    return this.request(`/Mission/${id}/transportation`, {
       method: "PATCH",
       body: JSON.stringify(transportationDetails),
     });
