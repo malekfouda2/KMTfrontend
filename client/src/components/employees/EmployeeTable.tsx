@@ -30,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Eye, Edit, Trash2, MoreVertical } from "lucide-react";
+import { Eye, Edit, Trash2, MoreVertical, MoreHorizontal } from "lucide-react";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -91,7 +91,8 @@ export const EmployeeTable = ({
 
   return (
     <>
-      <div className="rounded-md border">
+      {/* Desktop Table */}
+      <div className="hidden md:block rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -177,6 +178,83 @@ export const EmployeeTable = ({
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile Card Layout */}
+      <div className="md:hidden space-y-4">
+        {employees.map((employee) => (
+          <div key={employee.id} className="bg-white rounded-lg border p-4 shadow-sm">
+            <div className="flex items-start space-x-3">
+              <Avatar>
+                <AvatarFallback className="bg-gray-300 text-gray-600">
+                  {getInitials(employee.firstName, employee.lastName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900 truncate">
+                      {employee.firstName} {employee.lastName}
+                    </h3>
+                    <p className="text-sm text-gray-500 truncate">{employee.email}</p>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => onViewEmployee(employee)}>
+                        <Eye className="w-4 h-4 mr-2" />
+                        View
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEditEmployee(employee)}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={() => setDeleteEmployeeId(employee.id)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-500">Department:</span>
+                    <p className="font-medium capitalize">{employee.department}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Position:</span>
+                    <p className="font-medium">{employee.position}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Type:</span>
+                    <Badge
+                      variant="secondary"
+                      className={getEmployeeTypeColor(employee.employeeType)}
+                    >
+                      {employee.employeeType}
+                    </Badge>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Status:</span>
+                    <Badge
+                      variant="secondary"
+                      className={getStatusColor(employee.isActive)}
+                    >
+                      {employee.isActive !== null ? (employee.isActive ? "Active" : "Inactive") : "Unknown"}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       <AlertDialog

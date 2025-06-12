@@ -9,11 +9,11 @@ interface HeaderProps {
 
 export const Header = ({ title, breadcrumb = "Home" }: HeaderProps) => {
   return (
-    <header className="bg-white shadow-sm border-b px-6 py-4">
+    <header className="bg-white shadow-sm border-b px-3 sm:px-4 lg:px-6 py-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-black">{title}</h1>
-          <nav className="text-sm text-gray-500 mt-1">
+        <div className="ml-12 lg:ml-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-black">{title}</h1>
+          <nav className="text-xs sm:text-sm text-gray-500 mt-1">
             <span>{breadcrumb} / {title}</span>
           </nav>
         </div>
