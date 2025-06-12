@@ -17,7 +17,9 @@ import { apiClient } from "@/lib/api";
 
 const departmentSchema = z.object({
   name: z.string().min(1, "Department name is required"),
+  nameAr: z.string().min(1, "Arabic name is required"),
   description: z.string().min(1, "Description is required"),
+  descriptionAr: z.string().min(1, "Arabic description is required"),
 });
 
 type DepartmentFormData = z.infer<typeof departmentSchema>;
@@ -48,17 +50,21 @@ export default function Departments() {
     resolver: zodResolver(departmentSchema),
     defaultValues: {
       name: "",
+      nameAr: "",
       description: "",
+      descriptionAr: "",
     },
   });
 
   const createDepartmentMutation = useMutation({
     mutationFn: (data: DepartmentFormData) => {
       console.log("Creating department with data:", data);
-      // The KMT backend might expect different field names
+      // Send data exactly as the KMT backend expects
       const departmentData = {
-        Name: data.name,
-        Description: data.description
+        name: data.name,
+        nameAr: data.nameAr,
+        description: data.description,
+        descriptionAr: data.descriptionAr
       };
       console.log("Sending to API:", departmentData);
       return apiClient.createDepartment(departmentData);
@@ -153,9 +159,22 @@ export default function Departments() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Department Name</FormLabel>
+                        <FormLabel>Department Name (English)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter department name" {...field} />
+                          <Input placeholder="Enter department name in English" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="nameAr"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Department Name (Arabic)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="أدخل اسم القسم بالعربية" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -166,9 +185,22 @@ export default function Departments() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Description</FormLabel>
+                        <FormLabel>Description (English)</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Enter department description" {...field} />
+                          <Textarea placeholder="Enter department description in English" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="descriptionAr"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description (Arabic)</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="أدخل وصف القسم بالعربية" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
