@@ -36,10 +36,34 @@ export default function Attendance() {
 
   const { data: attendanceData, isLoading } = useQuery({
     queryKey: ["/api/Attendance", selectedDate, filters],
-    queryFn: () => apiClient.getAttendance({ 
-      date: selectedDate,
-      ...filters 
-    }),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getAttendance({ 
+          date: selectedDate,
+          ...filters 
+        });
+        console.log('Attendance fetched:', result);
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error('Error fetching attendance:', error);
+        throw error;
+      }
+    },
+    retry: false,
   });
 
   const attendanceRecords = Array.isArray(attendanceData) ? attendanceData : [];

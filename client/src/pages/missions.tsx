@@ -56,12 +56,60 @@ export default function Missions() {
 
   const { data: missionsData, isLoading } = useQuery({
     queryKey: ["/api/Missions", filters, search],
-    queryFn: () => apiClient.getMissions({ ...filters, search }),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getMissions({ ...filters, search });
+        console.log('Missions fetched:', result);
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error('Error fetching missions:', error);
+        throw error;
+      }
+    },
+    retry: false,
   });
 
   const { data: usersData } = useQuery({
     queryKey: ["/api/Users"],
-    queryFn: () => apiClient.getUsers(),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getUsers();
+        console.log('Users fetched:', result);
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error('Error fetching users:', error);
+        throw error;
+      }
+    },
+    retry: false,
   });
 
   const missions = Array.isArray(missionsData) ? missionsData : [];

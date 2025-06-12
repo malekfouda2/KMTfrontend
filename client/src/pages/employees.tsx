@@ -30,18 +30,55 @@ export default function Employees() {
 
   const { data: employees, isLoading } = useQuery({
     queryKey: ["/api/User", filters, search],
-    queryFn: () => apiClient.getUsers({ ...filters, search }),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getUsers({ ...filters, search });
+        console.log('Users/Employees fetched:', result);
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error('Error fetching employees:', error);
+        throw error;
+      }
+    },
+    retry: false,
   });
 
   // Fetch departments for filter dropdown
   const { data: departmentsData, isLoading: departmentsLoading, error: departmentsError } = useQuery({
     queryKey: ["/api/Department"],
     queryFn: async () => {
-      console.log("Fetching departments...");
       try {
         const result = await apiClient.getDepartments();
         console.log("Departments fetched successfully:", result);
-        return result;
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
       } catch (error) {
         console.error("Department fetch error:", error);
         throw error;

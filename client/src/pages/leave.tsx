@@ -58,7 +58,31 @@ export default function Leave() {
 
   const { data: leaveRequestsData, isLoading } = useQuery({
     queryKey: ["/api/LeaveRequests"],
-    queryFn: () => apiClient.getLeaveRequests(),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getLeaveRequests();
+        console.log('Leave requests fetched:', result);
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error('Error fetching leave requests:', error);
+        throw error;
+      }
+    },
+    retry: false,
   });
 
   const leaveRequests = Array.isArray(leaveRequestsData) ? leaveRequestsData : [];

@@ -28,7 +28,23 @@ import {
 export default function Analytics() {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/Dashboard/stats"],
-    queryFn: () => apiClient.getDashboardStats(),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getDashboardStats();
+        console.log('Dashboard stats fetched:', result);
+        
+        // Handle KMT backend response structure: { data: {...}, message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          return (result as { data: any }).data;
+        }
+        
+        return result;
+      } catch (error: any) {
+        console.error('Error fetching dashboard stats:', error);
+        throw error;
+      }
+    },
+    retry: false,
   });
 
   // Sample data for analytics charts

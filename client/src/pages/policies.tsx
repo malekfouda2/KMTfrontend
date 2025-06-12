@@ -36,7 +36,31 @@ export default function Policies() {
 
   const { data: policiesData, isLoading } = useQuery({
     queryKey: ["/api/Policies", search],
-    queryFn: () => apiClient.getPolicies({ search }),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getPolicies({ search });
+        console.log('Policies fetched:', result);
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error('Error fetching policies:', error);
+        throw error;
+      }
+    },
+    retry: false,
   });
 
   const policies = Array.isArray(policiesData) ? policiesData : [];
