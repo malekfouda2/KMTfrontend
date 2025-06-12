@@ -45,71 +45,7 @@ class ApiClient {
         body: errorText
       });
       
-      // Handle Department GET 401 authentication issues specifically
-      if (response.status === 401 && endpoint === '/Department' && (!options.method || options.method === 'GET')) {
-        console.log('Department GET 401 - trying authentication alternatives...');
-        
-        // Get fresh token for retry attempts
-        const freshToken = authService.getToken();
-        
-        // Try 1: Clean headers without Content-Type (some .NET APIs reject Content-Type on GET)
-        const cleanConfig = {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${freshToken}`,
-            'Accept': 'application/json'
-          }
-        };
-        
-        const retryResponse1 = await fetch(url, cleanConfig);
-        if (retryResponse1.ok) {
-          console.log('✓ Department GET succeeded with clean headers');
-          const contentType = retryResponse1.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            return retryResponse1.json();
-          }
-          return retryResponse1.text() as any;
-        }
-        
-        // Try 2: Different endpoint variations (.NET APIs can be case-sensitive)
-        const endpointVariations = [
-          '/api/department',
-          '/api/Departments', 
-          '/api/departments',
-          '/api/Department/list'
-        ];
-        
-        for (const altEndpoint of endpointVariations) {
-          const altUrl = url.replace('/api/Department', altEndpoint);
-          const retryResponse = await fetch(altUrl, cleanConfig);
-          
-          if (retryResponse.ok) {
-            console.log(`✓ Department GET succeeded with endpoint: ${altEndpoint}`);
-            const contentType = retryResponse.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-              return retryResponse.json();
-            }
-            return retryResponse.text() as any;
-          }
-        }
-        
-        // Try 3: Without Authorization header (check if endpoint is public)
-        const publicResponse = await fetch(url, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
-        
-        if (publicResponse.ok) {
-          console.log('✓ Department GET succeeded as public endpoint');
-          const contentType = publicResponse.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            return publicResponse.json();
-          }
-          return publicResponse.text() as any;
-        }
-        
-        console.log('Department GET authentication: All attempts failed - backend configuration issue');
-      }
+
       
       throw new Error(`${response.status}: ${errorText || response.statusText}`);
     }
@@ -303,67 +239,7 @@ class ApiClient {
   // Departments
   async getDepartments(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    
-    // First attempt with standard authentication
-    try {
-      return await this.request(`/Department${queryString}`);
-    } catch (error: any) {
-      // If 401, try alternative department endpoints that might work
-      if (error.message?.includes('401')) {
-        console.log('Department GET 401 - trying authenticated fallback approaches...');
-        
-        const token = authService.getToken();
-        const alternativeConfigs = [
-          // Try without Content-Type header
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Accept': 'application/json'
-            }
-          },
-          // Try with minimal headers
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Accept': 'application/json'
-            }
-          }
-        ];
-        
-        const alternativeEndpoints = [
-          `/Department${queryString}`,
-          `/department${queryString}`,
-          `/Departments${queryString}`,
-          `/departments${queryString}`
-        ];
-        
-        // Try each combination
-        for (const config of alternativeConfigs) {
-          for (const endpoint of alternativeEndpoints) {
-            try {
-              const response = await fetch(`${this.baseURL}${endpoint}`, config as RequestInit);
-              if (response.ok) {
-                console.log(`✅ Department GET succeeded with endpoint: ${endpoint}`);
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                  return await response.json();
-                }
-                return await response.text();
-              }
-            } catch (retryError) {
-              // Continue to next attempt
-            }
-          }
-        }
-        
-        // If all authenticated attempts fail, the backend has specific permission requirements
-        console.log('Department GET: All authentication methods failed - returning empty array');
-        return [];
-      }
-      throw error;
-    }
+    return this.request(`/Department${queryString}`);
   }
 
   async createDepartment(department: any) {

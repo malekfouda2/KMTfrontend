@@ -44,27 +44,38 @@ export default function Departments() {
       try {
         const result = await apiClient.getDepartments();
         console.log('Departments fetched:', result);
-        return result;
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
       } catch (error: any) {
         console.error('Error fetching departments:', error);
-        
-        // If authentication fails with 401, the backend requires specific permissions
-        if (error.message?.includes('401')) {
-          console.log('Department GET returned 401 - authentication issue with KMT backend');
-          toast({
-            title: "Authentication Issue",
-            description: "Unable to fetch departments from backend. Department creation will still work.",
-            variant: "destructive",
-          });
-          return [];
-        }
         throw error;
       }
     },
     retry: false,
   });
 
-  const departments = Array.isArray(departmentsData) ? departmentsData as Department[] : [];
+  // Map the KMT backend department structure to our interface
+  const departments: Department[] = Array.isArray(departmentsData) 
+    ? departmentsData.map((dept: any) => ({
+        id: dept.id,
+        name: dept.name,
+        description: dept.description,
+        employeeCount: dept.userCount || 0
+      }))
+    : [];
 
   const form = useForm<DepartmentFormData>({
     resolver: zodResolver(departmentSchema),
