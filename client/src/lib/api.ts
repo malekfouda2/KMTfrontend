@@ -1,4 +1,5 @@
 import { authService } from "./auth";
+import { kmtApiClient } from "./kmt-api";
 
 const API_BASE_URL = "http://localhost:5114/api";
 
@@ -45,7 +46,14 @@ class ApiClient {
         body: errorText
       });
       
-
+      // Handle authentication errors
+      if (response.status === 401) {
+        console.log('Authentication failed, clearing auth data');
+        authService.clearAuth();
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
       
       throw new Error(`${response.status}: ${errorText || response.statusText}`);
     }
@@ -373,4 +381,5 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient(API_BASE_URL);
+// Use KMT-optimized API client for all backend communication
+export const apiClient = kmtApiClient;
