@@ -16,6 +16,13 @@ class ApiClient {
     const url = `${this.baseURL}${endpoint}`;
     const token = authService.getToken();
 
+    console.log('API Request:', { 
+      url, 
+      method: options.method || 'GET',
+      hasToken: !!token,
+      tokenLength: token ? token.length : 0
+    });
+
     const config: RequestInit = {
       headers: {
         "Content-Type": "application/json",

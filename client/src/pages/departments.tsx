@@ -35,16 +35,26 @@ export default function Departments() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
+  const [localDepartments, setLocalDepartments] = useState<Department[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: departmentsData = [], isLoading, error } = useQuery({
     queryKey: ['/api/Department'],
-    queryFn: () => apiClient.getDepartments(),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getDepartments();
+        console.log('Departments fetched:', result);
+        return result;
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+        throw error;
+      }
+    },
     retry: false,
   });
 
-  const departments = Array.isArray(departmentsData) ? departmentsData as Department[] : [];
+  const departments = Array.isArray(departmentsData) ? departmentsData as Department[] : localDepartments;
 
   const form = useForm<DepartmentFormData>({
     resolver: zodResolver(departmentSchema),
@@ -71,6 +81,17 @@ export default function Departments() {
     },
     onSuccess: (response) => {
       console.log("Department created successfully:", response);
+      
+      // Add the created department to local state since GET endpoint returns 401
+      const newDepartment: Department = {
+        id: response.id || Date.now(),
+        name: response.name || form.getValues().name,
+        description: response.description || form.getValues().description,
+        employeeCount: 0
+      };
+      
+      setLocalDepartments(prev => [...prev, newDepartment]);
+      
       toast({
         title: "Success",
         description: "Department created successfully",
@@ -224,6 +245,15 @@ export default function Departments() {
           </Dialog>
         </div>
 
+        {/* Debug Info */}
+        {error && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              Note: Unable to fetch departments from server. You can still create new departments.
+            </p>
+          </div>
+        )}
+
         {/* Departments Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {departments.map((department: Department) => (
@@ -263,12 +293,19 @@ export default function Departments() {
           ))}
         </div>
 
-        {departments.length === 0 && (
+        {departments.length === 0 && !isLoading && (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Building2 className="w-12 h-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No departments found</h3>
-              <p className="text-gray-500 mb-4">Get started by creating your first department.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {error ? "Unable to load departments" : "No departments found"}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {error 
+                  ? "There was an issue connecting to the server. You can still create new departments." 
+                  : "Get started by creating your first department."
+                }
+              </p>
               <Button onClick={() => setIsAddModalOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Department
