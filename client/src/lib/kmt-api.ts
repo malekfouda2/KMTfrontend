@@ -187,9 +187,24 @@ class KMTApiClient {
       try {
         const decoded = JSON.parse(atob(token.split('.')[1]));
         console.log('Decoded token payload:', decoded);
+        console.log('All available claims:');
+        Object.keys(decoded).forEach(key => {
+          console.log(`  ${key}:`, decoded[key]);
+        });
+        console.log('Token expiry:', new Date(decoded.exp * 1000));
+        console.log('Is token expired?', Date.now() > decoded.exp * 1000);
       } catch (e) {
         console.error('Failed to decode token:', e);
       }
+    }
+    
+    // Test with a simple GET request first to verify authentication
+    console.log('Testing authentication with GET /Mission...');
+    try {
+      const testResponse = await this.request<any[]>("/Mission");
+      console.log('GET /Mission successful, authentication working');
+    } catch (testError) {
+      console.error('GET /Mission failed, authentication issue:', testError);
     }
     
     return this.request<any>("/Mission", {
