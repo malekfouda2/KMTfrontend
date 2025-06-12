@@ -45,23 +45,11 @@ export default function Departments() {
         const result = await apiClient.getDepartments();
         console.log('Departments fetched:', result);
         
-        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
-        if (result && typeof result === 'object' && 'data' in result) {
-          const responseData = (result as { data: any[] }).data;
-          if (Array.isArray(responseData)) {
-            return responseData;
-          }
-        }
-        
-        // If response is already an array, return as is
-        if (Array.isArray(result)) {
-          return result;
-        }
-        
-        return [];
+        // API client automatically extracts data from KMT response structure
+        return Array.isArray(result) ? result : [];
       } catch (error: any) {
         console.error('Error fetching departments:', error);
-        throw error;
+        return [];
       }
     },
     retry: false,

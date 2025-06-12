@@ -35,23 +35,11 @@ export default function Employees() {
         const result = await apiClient.getUsers({ ...filters, search });
         console.log('Users/Employees fetched:', result);
         
-        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
-        if (result && typeof result === 'object' && 'data' in result) {
-          const responseData = (result as { data: any[] }).data;
-          if (Array.isArray(responseData)) {
-            return responseData;
-          }
-        }
-        
-        // If response is already an array, return as is
-        if (Array.isArray(result)) {
-          return result;
-        }
-        
-        return [];
+        // API client now automatically extracts data from KMT response structure
+        return Array.isArray(result) ? result : [];
       } catch (error: any) {
         console.error('Error fetching employees:', error);
-        throw error;
+        return [];
       }
     },
     retry: false,

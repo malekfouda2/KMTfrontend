@@ -60,23 +60,11 @@ export default function Roles() {
         const result = await apiClient.getRoles();
         console.log('Roles fetched:', result);
         
-        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
-        if (result && typeof result === 'object' && 'data' in result) {
-          const responseData = (result as { data: any[] }).data;
-          if (Array.isArray(responseData)) {
-            return responseData;
-          }
-        }
-        
-        // If response is already an array, return as is
-        if (Array.isArray(result)) {
-          return result;
-        }
-        
-        return [];
+        // API client automatically extracts data from KMT response structure
+        return Array.isArray(result) ? result : [];
       } catch (error: any) {
         console.error('Error fetching roles:', error);
-        throw error;
+        return [];
       }
     },
     retry: false,
@@ -89,23 +77,11 @@ export default function Roles() {
         const result = await apiClient.getUsers();
         console.log('Users fetched:', result);
         
-        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
-        if (result && typeof result === 'object' && 'data' in result) {
-          const responseData = (result as { data: any[] }).data;
-          if (Array.isArray(responseData)) {
-            return responseData;
-          }
-        }
-        
-        // If response is already an array, return as is
-        if (Array.isArray(result)) {
-          return result;
-        }
-        
-        return [];
+        // API client automatically extracts data from KMT response structure
+        return Array.isArray(result) ? result : [];
       } catch (error: any) {
         console.error('Error fetching users:', error);
-        throw error;
+        return [];
       }
     },
     retry: false,
