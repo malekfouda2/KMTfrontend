@@ -18,7 +18,9 @@ import { apiClient } from "@/lib/api";
 
 const roleSchema = z.object({
   name: z.string().min(1, "Role name is required"),
+  nameAr: z.string().optional(),
   description: z.string().min(1, "Description is required"),
+  descriptionAr: z.string().optional(),
 });
 
 const assignRoleSchema = z.object({
@@ -53,22 +55,91 @@ export default function Roles() {
 
   const { data: rolesData = [], isLoading: rolesLoading } = useQuery({
     queryKey: ['/api/Role'],
-    queryFn: () => apiClient.getRoles(),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getRoles();
+        console.log('Roles fetched:', result);
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error('Error fetching roles:', error);
+        throw error;
+      }
+    },
+    retry: false,
   });
 
   const { data: usersData = [] } = useQuery({
     queryKey: ['/api/User'],
-    queryFn: () => apiClient.getUsers(),
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getUsers();
+        console.log('Users fetched:', result);
+        
+        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
+        if (result && typeof result === 'object' && 'data' in result) {
+          const responseData = (result as { data: any[] }).data;
+          if (Array.isArray(responseData)) {
+            return responseData;
+          }
+        }
+        
+        // If response is already an array, return as is
+        if (Array.isArray(result)) {
+          return result;
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error('Error fetching users:', error);
+        throw error;
+      }
+    },
+    retry: false,
   });
 
-  const roles = Array.isArray(rolesData) ? rolesData as Role[] : [];
-  const users = Array.isArray(usersData) ? usersData as User[] : [];
+  // Map the KMT backend role structure to our interface
+  const roles: Role[] = Array.isArray(rolesData) 
+    ? rolesData.map((role: any) => ({
+        id: role.id,
+        name: role.name,
+        description: role.description || '',
+        permissions: role.permissions || [],
+        userCount: role.userCount || 0
+      }))
+    : [];
+
+  // Map the KMT backend user structure to our interface
+  const users: User[] = Array.isArray(usersData) 
+    ? usersData.map((user: any) => ({
+        id: user.id,
+        name: user.name || user.firstName + ' ' + user.lastName,
+        username: user.username || user.email,
+        email: user.email,
+        role: user.role || 'user'
+      }))
+    : [];
 
   const roleForm = useForm<RoleFormData>({
     resolver: zodResolver(roleSchema),
     defaultValues: {
       name: "",
+      nameAr: "",
       description: "",
+      descriptionAr: "",
     },
   });
 
@@ -81,8 +152,19 @@ export default function Roles() {
   });
 
   const createRoleMutation = useMutation({
-    mutationFn: (data: RoleFormData) => apiClient.createRole(data),
-    onSuccess: () => {
+    mutationFn: (data: RoleFormData) => {
+      // Format data for KMT backend structure
+      const roleData = {
+        name: data.name,
+        nameAr: data.nameAr || data.name,
+        description: data.description,
+        descriptionAr: data.descriptionAr || data.description,
+      };
+      console.log("Sending role to API:", roleData);
+      return apiClient.createRole(roleData);
+    },
+    onSuccess: (response) => {
+      console.log("Role created successfully:", response);
       toast({
         title: "Success",
         description: "Role created successfully",
@@ -92,6 +174,7 @@ export default function Roles() {
       roleForm.reset();
     },
     onError: (error: Error) => {
+      console.error("Role creation error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create role",
@@ -272,9 +355,22 @@ export default function Roles() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Role Name</FormLabel>
+                          <FormLabel>Role Name (English)</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter role name" {...field} />
+                            <Input placeholder="Enter role name in English" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={roleForm.control}
+                      name="nameAr"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Role Name (Arabic)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="أدخل اسم الدور بالعربية" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -285,9 +381,22 @@ export default function Roles() {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Description</FormLabel>
+                          <FormLabel>Description (English)</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Enter role description" {...field} />
+                            <Textarea placeholder="Enter role description in English" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={roleForm.control}
+                      name="descriptionAr"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description (Arabic)</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="أدخل وصف الدور بالعربية" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
