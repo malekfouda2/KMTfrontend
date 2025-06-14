@@ -471,32 +471,34 @@ class KMTApiClient {
   async assignRole(userId: string, roleId: string) {
     console.log('Assigning role:', { userId, roleId });
     
-    // Try the UserRole endpoint with userId in the URL path
-    try {
-      const result = await this.request<any>(`/UserRole/${userId}`, {
-        method: "POST",
-        body: JSON.stringify({ 
-          roleIds: [roleId]
-        }),
-      });
-      
-      console.log('Role assignment result:', result);
-      return result;
-    } catch (error: any) {
-      console.log('UserRole/{userId} failed, trying UserRole with userId in body');
-      
-      // Fallback to original approach
-      const result = await this.request<any>(`/UserRole`, {
-        method: "POST",
-        body: JSON.stringify({ 
-          userId: userId,
-          roleIds: [roleId]
-        }),
-      });
-      
-      console.log('Role assignment result:', result);
-      return result;
+    // Test various UserRole endpoint patterns based on common REST API patterns
+    const endpointVariations = [
+      { url: `/User/${userId}/Role`, body: { roleIds: [roleId] } },
+      { url: `/User/${userId}/Roles`, body: { roleIds: [roleId] } },
+      { url: `/UserRole/${userId}`, body: { roleIds: [roleId] } },
+      { url: `/UserRole`, body: { userId: userId, roleIds: [roleId] } },
+      { url: `/Role/assign`, body: { userId: userId, roleId: roleId } },
+      { url: `/User/${userId}/assignRole`, body: { roleId: roleId } },
+      { url: `/api/UserRole`, body: { userId: userId, roleIds: [roleId] } }
+    ];
+    
+    for (const variation of endpointVariations) {
+      try {
+        console.log(`Trying: POST ${variation.url}`, variation.body);
+        const result = await this.request<any>(variation.url, {
+          method: "POST",
+          body: JSON.stringify(variation.body),
+        });
+        
+        console.log(`✅ SUCCESS with: POST ${variation.url}`, result);
+        return result;
+      } catch (error: any) {
+        console.log(`❌ Failed: POST ${variation.url} - ${error.message}`);
+        continue;
+      }
     }
+    
+    throw new Error('All UserRole endpoint variations failed. The KMT backend may not have implemented role assignment endpoints yet.');
   }
 
   // Permissions
