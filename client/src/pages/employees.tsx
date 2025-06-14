@@ -26,9 +26,9 @@ export default function Employees() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<KMTUser | null>(null);
   const [filters, setFilters] = useState<FilterParams>({
-    department: "",
-    employeeType: "",
-    status: "",
+    department: "all",
+    employeeType: "all",
+    status: "all",
   });
   const [search, setSearch] = useState("");
 
@@ -62,7 +62,40 @@ export default function Employees() {
         const result = await apiClient.getUsers(searchParams);
         console.log('Users/Employees fetched:', result);
         
-        return Array.isArray(result) ? result : [];
+        let employees = Array.isArray(result) ? result : [];
+        
+        // Client-side filtering as fallback if backend doesn't support filters
+        if (employees.length > 0) {
+          // Filter by search term
+          if (search.trim()) {
+            const searchTerm = search.trim().toLowerCase();
+            employees = employees.filter((emp: any) => 
+              emp.username?.toLowerCase().includes(searchTerm) ||
+              emp.email?.toLowerCase().includes(searchTerm) ||
+              emp.phoneNumber?.toLowerCase().includes(searchTerm)
+            );
+          }
+          
+          // Filter by department
+          if (filters.department && filters.department !== "all") {
+            employees = employees.filter((emp: any) => 
+              emp.department?.id?.toString() === filters.department ||
+              emp.departmentId?.toString() === filters.department
+            );
+          }
+          
+          // Filter by title/job type
+          if (filters.employeeType && filters.employeeType !== "all") {
+            employees = employees.filter((emp: any) => 
+              emp.title?.id?.toString() === filters.employeeType ||
+              emp.titleId?.toString() === filters.employeeType
+            );
+          }
+          
+          console.log('Filtered employees:', employees);
+        }
+        
+        return employees;
       } catch (error: any) {
         console.error('Error fetching employees:', error);
         return [];
@@ -138,9 +171,9 @@ export default function Employees() {
 
   const clearFilters = () => {
     setFilters({
-      department: "",
-      employeeType: "",
-      status: "",
+      department: "all",
+      employeeType: "all",
+      status: "all",
     });
     setSearch("");
   };

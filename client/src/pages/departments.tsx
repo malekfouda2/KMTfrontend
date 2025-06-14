@@ -39,23 +39,31 @@ export default function Departments() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch employees for the selected department
-  const { data: departmentEmployees = [] } = useQuery({
-    queryKey: ['/api/User', 'department', selectedDepartment?.id],
+  // Fetch all employees and filter by department
+  const { data: allEmployees = [] } = useQuery({
+    queryKey: ['/api/User'],
     queryFn: async () => {
-      if (!selectedDepartment?.id) return [];
       try {
-        const result = await apiClient.getUsers({ departmentId: selectedDepartment.id.toString() });
-        console.log('Department employees fetched for department', selectedDepartment.id, ':', result);
+        const result = await apiClient.getUsers({ pageSize: 500 });
+        console.log('All employees fetched:', result);
         return Array.isArray(result) ? result : [];
       } catch (error: any) {
-        console.error('Error fetching department employees:', error);
+        console.error('Error fetching employees:', error);
         return [];
       }
     },
-    enabled: !!selectedDepartment?.id,
     retry: false,
   });
+
+  // Filter employees for the selected department
+  const departmentEmployees = selectedDepartment?.id 
+    ? allEmployees.filter((emp: any) => {
+        const empDepartmentId = emp.department?.id || emp.departmentId;
+        const matches = empDepartmentId?.toString() === selectedDepartment.id.toString();
+        console.log('Employee:', emp.username, 'Department ID:', empDepartmentId, 'Target:', selectedDepartment.id, 'Matches:', matches);
+        return matches;
+      })
+    : [];
 
   const { data: departmentsData = [], isLoading, error } = useQuery({
     queryKey: ['/api/Department'],
