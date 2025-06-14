@@ -53,13 +53,7 @@ const navigationItems: NavigationItem[] = [
     icon: "Briefcase",
     route: "/missions",
   },
-  {
-    id: "policies",
-    label: "Policies",
-    icon: "Settings",
-    route: "/policies",
-    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
-  },
+
   {
     id: "analytics",
     label: "Analytics",

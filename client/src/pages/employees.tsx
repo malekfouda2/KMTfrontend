@@ -15,12 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Filter } from "lucide-react";
+import { Plus, Filter, User, Mail, Phone, Calendar, Building, Briefcase } from "lucide-react";
 
 export default function Employees() {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<KMTUser | null>(null);
   const [filters, setFilters] = useState<FilterParams>({
     department: "",
     employeeType: "",
@@ -33,18 +37,31 @@ export default function Employees() {
     queryFn: async () => {
       try {
         // Build proper search and filter parameters for KMT backend
-        const searchParams = {
-          search: search || undefined,
-          departmentId: filters.department || undefined,
-          status: filters.status || undefined,
-          pageNumber: 1,
-          pageSize: 50
-        };
+        const searchParams: any = {};
         
+        if (search.trim()) {
+          searchParams.search = search.trim();
+        }
+        
+        if (filters.department && filters.department !== "all" && filters.department !== "") {
+          searchParams.departmentId = filters.department;
+        }
+        
+        if (filters.employeeType && filters.employeeType !== "all" && filters.employeeType !== "") {
+          searchParams.titleId = filters.employeeType;
+        }
+        
+        if (filters.status && filters.status !== "all" && filters.status !== "") {
+          searchParams.status = filters.status;
+        }
+        
+        searchParams.pageNumber = 1;
+        searchParams.pageSize = 100;
+        
+        console.log('Fetching employees with params:', searchParams);
         const result = await apiClient.getUsers(searchParams);
         console.log('Users/Employees fetched:', result);
         
-        // API client now automatically extracts data from KMT response structure
         return Array.isArray(result) ? result : [];
       } catch (error: any) {
         console.error('Error fetching employees:', error);
@@ -110,8 +127,8 @@ export default function Employees() {
   console.log("Titles loading:", titlesLoading);
 
   const handleViewEmployee = (employee: KMTUser) => {
-    // TODO: Implement employee detail view
-    console.log("View employee:", employee);
+    setSelectedEmployee(employee);
+    setShowDetailsModal(true);
   };
 
   const handleEditEmployee = (employee: KMTUser) => {
@@ -174,9 +191,9 @@ export default function Employees() {
                     <SelectValue placeholder="All Departments" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Departments</SelectItem>
+                    <SelectItem value="">All Departments</SelectItem>
                     {departments.map((dept: any) => (
-                      <SelectItem key={dept.id} value={dept.id || dept.name}>
+                      <SelectItem key={dept.id} value={dept.id.toString()}>
                         {dept.name}
                       </SelectItem>
                     ))}
@@ -195,9 +212,9 @@ export default function Employees() {
                     <SelectValue placeholder="All Titles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Titles</SelectItem>
+                    <SelectItem value="">All Titles</SelectItem>
                     {titles.map((title: any) => (
-                      <SelectItem key={title.id} value={title.id || title.name}>
+                      <SelectItem key={title.id} value={title.id.toString()}>
                         {title.name}
                       </SelectItem>
                     ))}
@@ -253,6 +270,93 @@ export default function Employees() {
         open={showAddModal}
         onOpenChange={setShowAddModal}
       />
+
+      {/* Employee Details Modal */}
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Employee Details</DialogTitle>
+          </DialogHeader>
+          {selectedEmployee && (
+            <div className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-gray-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold">{selectedEmployee.username}</h3>
+                  <p className="text-gray-600">{selectedEmployee.email}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium flex items-center">
+                      <User className="w-4 h-4 mr-2" />
+                      Personal Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">Username</Label>
+                      <p className="font-medium">{selectedEmployee.username}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Email</Label>
+                      <p className="font-medium">{selectedEmployee.email}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Phone</Label>
+                      <p className="font-medium">{selectedEmployee.phoneNumber || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Created</Label>
+                      <p className="font-medium">
+                        {selectedEmployee.createdAt ? new Date(selectedEmployee.createdAt).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium flex items-center">
+                      <Building className="w-4 h-4 mr-2" />
+                      Work Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">Department</Label>
+                      <p className="font-medium">{selectedEmployee.department?.name || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Title</Label>
+                      <p className="font-medium">{selectedEmployee.title?.name || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Employee ID</Label>
+                      <p className="font-medium">{selectedEmployee.id}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {selectedEmployee.department?.description && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium">Department Description</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600">{selectedEmployee.department.description}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }
