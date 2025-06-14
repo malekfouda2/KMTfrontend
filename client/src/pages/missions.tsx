@@ -47,12 +47,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, MapPin, Calendar, User, Truck, Edit, Trash2, Loader2, CheckCircle, XCircle } from "lucide-react";
 
 const missionSchema = z.object({
+  name: z.string().min(1, "Mission name is required").max(200, "Name must be 200 characters or less"),
+  nameAr: z.string().min(1, "Arabic name is required").max(200, "Arabic name must be 200 characters or less"),
   description: z.string().min(1, "Description is required").max(500, "Description must be 500 characters or less"),
   descriptionAr: z.string().min(1, "Arabic description is required").max(500, "Arabic description must be 500 characters or less"),
-  missionDate: z.string().min(1, "Mission date is required"),
-  startTime: z.string().min(1, "Start time is required"),
-  endTime: z.string().optional(),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().optional(),
   location: z.string().min(1, "Location is required").max(200, "Location must be 200 characters or less"),
+  locationAr: z.string().min(1, "Arabic location is required").max(200, "Arabic location must be 200 characters or less"),
+  status: z.enum(["pending", "approved", "in_progress", "completed", "cancelled"]).default("pending"),
+  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
 });
 
 type MissionFormData = z.infer<typeof missionSchema>;
@@ -70,12 +74,16 @@ export default function Missions() {
   const form = useForm<MissionFormData>({
     resolver: zodResolver(missionSchema),
     defaultValues: {
+      name: "",
+      nameAr: "",
       description: "",
       descriptionAr: "",
-      missionDate: "",
-      startTime: "",
-      endTime: "",
+      startDate: "",
+      endDate: "",
       location: "",
+      locationAr: "",
+      status: "pending",
+      priority: "medium",
     },
   });
 
@@ -162,12 +170,16 @@ export default function Missions() {
 
   const onSubmit = (data: MissionFormData) => {
     const formattedData = {
+      name: data.name,
+      nameAr: data.nameAr,
       description: data.description,
       descriptionAr: data.descriptionAr,
-      missionDate: new Date(data.missionDate).toISOString().split('T')[0], // Convert to YYYY-MM-DD format
-      startTime: `${data.startTime}:00`, // Convert "HH:mm" to "HH:mm:ss" string
-      ...(data.endTime && { endTime: `${data.endTime}:00` }),
+      startDate: new Date(data.startDate).toISOString(),
+      ...(data.endDate && { endDate: new Date(data.endDate).toISOString() }),
       location: data.location,
+      locationAr: data.locationAr,
+      status: data.status,
+      priority: data.priority,
     };
     
     console.log('Form data before submission:', data);
@@ -263,6 +275,34 @@ export default function Missions() {
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mission Name (English)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Mission name in English" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="nameAr"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mission Name (Arabic)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="اسم المهمة بالعربية" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
                     control={form.control}
                     name="description"
@@ -292,10 +332,10 @@ export default function Missions() {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="missionDate"
+                      name="startDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Mission Date</FormLabel>
+                          <FormLabel>Start Date</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -303,6 +343,21 @@ export default function Missions() {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>End Date (Optional)</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="location"
