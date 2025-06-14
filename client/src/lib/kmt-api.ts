@@ -469,9 +469,12 @@ class KMTApiClient {
 
   // Role assignment
   async assignRole(userId: string, roleId: string) {
-    return this.request<any>(`/User/${userId}/role`, {
-      method: "PATCH",
-      body: JSON.stringify({ roleId }),
+    return this.request<any>(`/UserRole`, {
+      method: "POST",
+      body: JSON.stringify({ 
+        userId: userId,
+        roleIds: [roleId]
+      }),
     });
   }
 

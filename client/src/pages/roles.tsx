@@ -196,8 +196,7 @@ export default function Roles() {
 
   const assignRoleMutation = useMutation({
     mutationFn: (data: AssignRoleFormData) => {
-      const updateData = { role: roles.find(r => r.id.toString() === data.roleId)?.name || data.roleId };
-      return apiClient.updateUser(data.userId, updateData);
+      return apiClient.assignRole(data.userId, data.roleId);
     },
     onSuccess: () => {
       toast({
