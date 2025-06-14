@@ -1,0 +1,69 @@
+{
+  "data": [
+    {
+      "id": "2a4335c2-0305-46aa-ab09-d00e79a33bd8",
+      "code": "departments.create",
+      "description": "Create new departments",
+      "descriptionAr": "إنشاء أقسام جديدة"
+    },
+    {
+      "id": "38ef296c-34ac-4ab1-a7e0-b2cad4ed9f3a",
+      "code": "departments.delete",
+      "description": "Delete departments",
+      "descriptionAr": "حذف الأقسام"
+    },
+    {
+      "id": "b5433387-d312-4dd4-941a-8241237333c2",
+      "code": "departments.update",
+      "description": "Update existing departments",
+      "descriptionAr": "تحديث الأقسام الحالية"
+    },
+    {
+      "id": "4335b90c-2eb6-4ff8-9242-e85887387534",
+      "code": "departments.view",
+      "description": "View all departments",
+      "descriptionAr": "عرض جميع الأقسام"
+    },
+    {
+      "id": "7af77a33-af8a-4881-aa5d-a221b49f1c86",
+      "code": "missions.assign",
+      "description": "Assign users to missions",
+      "descriptionAr": "تعيين المستخدمين إلى المهام"
+    },
+    {
+      "id": "edb21d4e-4a8b-4f86-a20d-0013a222673d",
+      "code": "missions.create",
+      "description": "Create new missions",
+      "descriptionAr": "إنشاء مهام جديدة"
+    },
+    {
+      "id": "6c96874d-9204-4e35-91da-456a3b0018fa",
+      "code": "missions.delete",
+      "description": "Delete missions",
+      "descriptionAr": "حذف المهام"
+    },
+    {
+      "id": "6ee0866f-a1da-45b0-9d19-6486c7ae5400",
+      "code": "missions.transportation.update",
+      "description": "Update mission transportation",
+      "descriptionAr": "تحديث وسيلة التنقل للمهام"
+    },
+    {
+      "id": "bd1a3887-91cb-4699-8e2b-fa45ae3af9d1",
+      "code": "missions.update",
+      "description": "Update existing missions",
+      "descriptionAr": "تحديث المهام الحالية"
+    },
+    {
+      "id": "63510a3c-5988-41fd-9488-b27f8ad10396",
+      "code": "missions.view",
+      "description": "View all missions",
+      "descriptionAr": "عرض جميع المهام"
+    }
+  ],
+  "message": "Retrieved Permissions Successfully.",
+  "success": true,
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalRecords": 25
+}

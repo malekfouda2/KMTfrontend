@@ -56,7 +56,8 @@ interface User {
 export default function Roles() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  // Permissions management removed - not supported by KMT backend
+  const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -217,8 +218,27 @@ export default function Roles() {
     },
   });
 
-  // KMT backend doesn't support role-permission assignment
-  // Only supports role assignment to users
+  const assignPermissionMutation = useMutation({
+    mutationFn: (data: AssignPermissionFormData) => {
+      return apiClient.assignPermission(data.roleId, data.permission);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Permission assigned successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/Role'] });
+      setIsPermissionsModalOpen(false);
+      permissionForm.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign permission",
+        variant: "destructive",
+      });
+    },
+  });
 
   const deleteRoleMutation = useMutation({
     mutationFn: (id: string) => apiClient.deleteRole(id),
@@ -246,7 +266,15 @@ export default function Roles() {
     assignRoleMutation.mutate(data);
   };
 
-  // KMT backend doesn't support permission assignment to roles
+  const onAssignPermission = (data: AssignPermissionFormData) => {
+    assignPermissionMutation.mutate(data);
+  };
+
+  const handleManagePermissions = (role: Role) => {
+    setSelectedRole(role);
+    permissionForm.setValue("roleId", role.id.toString());
+    setIsPermissionsModalOpen(true);
+  };
 
   const handleDeleteRole = (id: number) => {
     if (confirm("Are you sure you want to delete this role?")) {
@@ -434,7 +462,89 @@ export default function Roles() {
               </DialogContent>
             </Dialog>
 
-            {/* Permissions not supported by KMT backend */}
+            {/* Permissions Management Modal */}
+            <Dialog open={isPermissionsModalOpen} onOpenChange={setIsPermissionsModalOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Manage Permissions for {selectedRole?.name}</DialogTitle>
+                </DialogHeader>
+                <Form {...permissionForm}>
+                  <form onSubmit={permissionForm.handleSubmit(onAssignPermission)} className="space-y-4">
+                    <FormField
+                      control={permissionForm.control}
+                      name="permission"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Select Permission</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select permission" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Array.isArray(permissionsData) && permissionsData.length > 0 ? (
+                                permissionsData.map((permission: any) => (
+                                  <SelectItem key={permission.id} value={permission.id}>
+                                    {permission.description}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <>
+                                  <SelectItem value="users.read">View Users</SelectItem>
+                                  <SelectItem value="users.write">Manage Users</SelectItem>
+                                  <SelectItem value="roles.read">View Roles</SelectItem>
+                                  <SelectItem value="roles.write">Manage Roles</SelectItem>
+                                  <SelectItem value="departments.read">View Departments</SelectItem>
+                                  <SelectItem value="departments.write">Manage Departments</SelectItem>
+                                  <SelectItem value="missions.read">View Missions</SelectItem>
+                                  <SelectItem value="missions.write">Manage Missions</SelectItem>
+                                  <SelectItem value="attendance.read">View Attendance</SelectItem>
+                                  <SelectItem value="attendance.write">Manage Attendance</SelectItem>
+                                  <SelectItem value="leave.read">View Leave Requests</SelectItem>
+                                  <SelectItem value="leave.write">Manage Leave Requests</SelectItem>
+                                  <SelectItem value="policies.read">View Policies</SelectItem>
+                                  <SelectItem value="policies.write">Manage Policies</SelectItem>
+                                  <SelectItem value="analytics.read">View Analytics</SelectItem>
+                                  <SelectItem value="system.admin">System Admin</SelectItem>
+                                </>
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {selectedRole && selectedRole.permissions.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold mb-2">Current Permissions:</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedRole.permissions.map((permission: string, index: number) => (
+                            <Badge key={index} variant="secondary">
+                              {permission}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsPermissionsModalOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={assignPermissionMutation.isPending}>
+                        {assignPermissionMutation.isPending ? "Assigning..." : "Assign Permission"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -456,6 +566,14 @@ export default function Roles() {
                   {role.description}
                 </CardDescription>
                 <div className="flex justify-end space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleManagePermissions(role)}
+                  >
+                    <Shield className="w-4 h-4 mr-1" />
+                    Permissions
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"

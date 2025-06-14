@@ -1,0 +1,178 @@
+{
+  "data": [
+    {
+      "id": "985da5e4-998b-4e09-9429-7622df92c253",
+      "name": "Hr Manager",
+      "nameAr": "مدير العلاقات الداخلية",
+      "description": "Has Mid-Full Access to all system features",
+      "descriptionAr": "مدير العلاقات الداخلية",
+      "permissions": [],
+      "createdAt": "2025-06-14T13:43:38.871264"
+    },
+    {
+      "id": "4e7cbf9e-ae6c-4ffc-8394-44e41523c562",
+      "name": "Super Admin",
+      "nameAr": "مدير النظام",
+      "description": "Has full access to all system features",
+      "descriptionAr": "لديه وصول كامل إلى جميع ميزات النظام",
+      "permissions": [
+        {
+          "id": "edb21d4e-4a8b-4f86-a20d-0013a222673d",
+          "code": "missions.create",
+          "description": "Create new missions",
+          "descriptionAr": "إنشاء مهام جديدة"
+        },
+        {
+          "id": "89e96ae1-0fbf-4c4c-b9a3-07eacab86d4d",
+          "code": "users.update",
+          "description": "Update existing users",
+          "descriptionAr": "تحديث المستخدمين الحاليين"
+        },
+        {
+          "id": "e7963127-c6e0-4e0b-b5db-0eb8b5d4c5b0",
+          "code": "roles.update",
+          "description": "Update existing roles",
+          "descriptionAr": "تحديث الأدوار الحالية"
+        },
+        {
+          "id": "1e8799f6-bc71-45e0-82a6-11087fdcfe8c",
+          "code": "users.view",
+          "description": "View all users",
+          "descriptionAr": "عرض جميع المستخدمين"
+        },
+        {
+          "id": "8861e834-242a-4895-96a8-27b5b626e933",
+          "code": "permissions.assign",
+          "description": "Assign permissions to roles",
+          "descriptionAr": "تعيين الصلاحيات للأدوار"
+        },
+        {
+          "id": "b00ea3bd-909f-42c5-a13b-2a1f74554332",
+          "code": "titles.create",
+          "description": "Create new titles",
+          "descriptionAr": "إنشاء وظائف جديدة"
+        },
+        {
+          "id": "f4da573e-ca0d-4c41-83f3-43c0e92823f7",
+          "code": "titles.delete",
+          "description": "Delete titles",
+          "descriptionAr": "حذف الوظائف"
+        },
+        {
+          "id": "6c96874d-9204-4e35-91da-456a3b0018fa",
+          "code": "missions.delete",
+          "description": "Delete missions",
+          "descriptionAr": "حذف المهام"
+        },
+        {
+          "id": "2a76fae5-0b30-46b8-b0ef-4d5ec118e508",
+          "code": "users.create",
+          "description": "Create new users",
+          "descriptionAr": "إنشاء مستخدمين جدد"
+        },
+        {
+          "id": "6ee0866f-a1da-45b0-9d19-6486c7ae5400",
+          "code": "missions.transportation.update",
+          "description": "Update mission transportation",
+          "descriptionAr": "تحديث وسيلة التنقل للمهام"
+        },
+        {
+          "id": "c5c42325-42d3-4963-9a4b-7fd5f2d11617",
+          "code": "titles.view",
+          "description": "View all titles",
+          "descriptionAr": "عرض جميع الوظائف"
+        },
+        {
+          "id": "b5433387-d312-4dd4-941a-8241237333c2",
+          "code": "departments.update",
+          "description": "Update existing departments",
+          "descriptionAr": "تحديث الأقسام الحالية"
+        },
+        {
+          "id": "143afcb8-ade2-47ee-9726-8a994c70988d",
+          "code": "roles.view",
+          "description": "View all roles",
+          "descriptionAr": "عرض جميع الأدوار"
+        },
+        {
+          "id": "7af77a33-af8a-4881-aa5d-a221b49f1c86",
+          "code": "missions.assign",
+          "description": "Assign users to missions",
+          "descriptionAr": "تعيين المستخدمين إلى المهام"
+        },
+        {
+          "id": "63510a3c-5988-41fd-9488-b27f8ad10396",
+          "code": "missions.view",
+          "description": "View all missions",
+          "descriptionAr": "عرض جميع المهام"
+        },
+        {
+          "id": "38ef296c-34ac-4ab1-a7e0-b2cad4ed9f3a",
+          "code": "departments.delete",
+          "description": "Delete departments",
+          "descriptionAr": "حذف الأقسام"
+        },
+        {
+          "id": "6d58cd6a-badb-47b2-a2fa-b97330834f7a",
+          "code": "roles.delete",
+          "description": "Delete roles",
+          "descriptionAr": "حذف الأدوار"
+        },
+        {
+          "id": "b78c0789-a3f2-48e3-b6f4-cca7bbb60454",
+          "code": "users.delete",
+          "description": "Delete users",
+          "descriptionAr": "حذف المستخدمين"
+        },
+        {
+          "id": "2a4335c2-0305-46aa-ab09-d00e79a33bd8",
+          "code": "departments.create",
+          "description": "Create new departments",
+          "descriptionAr": "إنشاء أقسام جديدة"
+        },
+        {
+          "id": "98c18502-f61f-491f-9921-de395834cf3f",
+          "code": "roles.create",
+          "description": "Create new roles",
+          "descriptionAr": "إنشاء أدوار جديدة"
+        },
+        {
+          "id": "53523747-e55f-42c5-afda-e231e742be9c",
+          "code": "roles.assign",
+          "description": "Assign roles to users",
+          "descriptionAr": "تعيين الأدوار للمستخدمين"
+        },
+        {
+          "id": "64f08086-2516-452b-8a63-e6d6d7f423f1",
+          "code": "permissions.view",
+          "description": "View all permissions",
+          "descriptionAr": "عرض جميع الصلاحيات"
+        },
+        {
+          "id": "4335b90c-2eb6-4ff8-9242-e85887387534",
+          "code": "departments.view",
+          "description": "View all departments",
+          "descriptionAr": "عرض جميع الأقسام"
+        },
+        {
+          "id": "bd1a3887-91cb-4699-8e2b-fa45ae3af9d1",
+          "code": "missions.update",
+          "description": "Update existing missions",
+          "descriptionAr": "تحديث المهام الحالية"
+        },
+        {
+          "id": "142fc0b0-169d-4622-bca5-fe5df33a4fbf",
+          "code": "titles.update",
+          "description": "Update existing titles",
+          "descriptionAr": "تحديث الوظائف الحالية"
+        }
+      ],
+      "createdAt": "2025-05-23T22:50:10.9106578"
+    }
+  ],
+  "message": "Retrieved Roles Successfully.",
+  "success": true,
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalRecords": 2
+}

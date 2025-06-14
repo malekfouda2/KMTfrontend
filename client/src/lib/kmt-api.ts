@@ -480,16 +480,12 @@ class KMTApiClient {
     return this.request<any[]>("/Permission");
   }
 
-  async assignPermission(roleId: string, permission: string) {
-    // Try different permission assignment endpoints
-    console.log(`Trying to assign permission ${permission} to role ${roleId}`);
-    
-    // Try with POST to Role/AssignPermission
-    return this.request<any>("/Role/AssignPermission", {
-      method: "POST",
+  async assignPermission(roleId: string, permissionId: string) {
+    // Use PUT to assign permission to role based on KMT backend structure
+    return this.request<any>(`/Role/${roleId}/permissions`, {
+      method: "PUT",
       body: JSON.stringify({ 
-        roleId: roleId,
-        permissionId: permission 
+        permissionIds: [permissionId]
       }),
     });
   }
