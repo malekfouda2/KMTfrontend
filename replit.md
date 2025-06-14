@@ -139,6 +139,7 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ Fixed KMTUser type mapping to prevent React object rendering errors
 - ✅ Mission creation fixed with exact KMT CreateMissionRequest DTO structure
 - ✅ Permissions assignment implemented via role update endpoint with permissions array
+- ✅ Enhanced permissions UI by replacing dropdown with floating buttons for better user experience and direct selection
 
 ## Changelog
 

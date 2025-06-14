@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Shield, Users, Edit, Trash2, UserPlus } from "lucide-react";
+import { Plus, Shield, Users, Edit, Trash2, UserPlus, CheckCircle } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -470,51 +470,45 @@ export default function Roles() {
                 </DialogHeader>
                 <Form {...permissionForm}>
                   <form onSubmit={permissionForm.handleSubmit(onAssignPermission)} className="space-y-4">
-                    <FormField
-                      control={permissionForm.control}
-                      name="permission"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Select Permission</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select permission" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {Array.isArray(permissionsData) && permissionsData.length > 0 ? (
-                                permissionsData.map((permission: any) => (
-                                  <SelectItem key={permission.id} value={permission.id}>
-                                    {permission.description}
-                                  </SelectItem>
-                                ))
-                              ) : (
-                                <>
-                                  <SelectItem value="users.read">View Users</SelectItem>
-                                  <SelectItem value="users.write">Manage Users</SelectItem>
-                                  <SelectItem value="roles.read">View Roles</SelectItem>
-                                  <SelectItem value="roles.write">Manage Roles</SelectItem>
-                                  <SelectItem value="departments.read">View Departments</SelectItem>
-                                  <SelectItem value="departments.write">Manage Departments</SelectItem>
-                                  <SelectItem value="missions.read">View Missions</SelectItem>
-                                  <SelectItem value="missions.write">Manage Missions</SelectItem>
-                                  <SelectItem value="attendance.read">View Attendance</SelectItem>
-                                  <SelectItem value="attendance.write">Manage Attendance</SelectItem>
-                                  <SelectItem value="leave.read">View Leave Requests</SelectItem>
-                                  <SelectItem value="leave.write">Manage Leave Requests</SelectItem>
-                                  <SelectItem value="policies.read">View Policies</SelectItem>
-                                  <SelectItem value="policies.write">Manage Policies</SelectItem>
-                                  <SelectItem value="analytics.read">View Analytics</SelectItem>
-                                  <SelectItem value="system.admin">System Admin</SelectItem>
-                                </>
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="space-y-3">
+                      <FormLabel>Select Permission to Add</FormLabel>
+                      <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                        {Array.isArray(permissionsData) && permissionsData.length > 0 ? (
+                          permissionsData.map((permission: any) => {
+                            const isAlreadyAssigned = selectedRole?.permissions.some((p: any) => 
+                              typeof p === 'string' ? p === permission.description : p.id === permission.id
+                            );
+                            
+                            return (
+                              <Button
+                                key={permission.id}
+                                type="button"
+                                variant={isAlreadyAssigned ? "secondary" : "outline"}
+                                size="sm"
+                                disabled={isAlreadyAssigned}
+                                onClick={() => {
+                                  permissionForm.setValue("permission", permission.id);
+                                  permissionForm.handleSubmit(onAssignPermission)();
+                                }}
+                                className="text-left justify-start h-auto p-2 whitespace-normal"
+                              >
+                                <div className="flex items-center gap-2">
+                                  {isAlreadyAssigned && <CheckCircle className="w-3 h-3 text-green-600" />}
+                                  <div>
+                                    <div className="font-medium text-xs">{permission.code}</div>
+                                    <div className="text-xs text-gray-500">{permission.description}</div>
+                                  </div>
+                                </div>
+                              </Button>
+                            );
+                          })
+                        ) : (
+                          <div className="col-span-2 text-center text-gray-500 py-4">
+                            No permissions available
+                          </div>
+                        )}
+                      </div>
+                    </div>
                     
                     {selectedRole && selectedRole.permissions.length > 0 && (
                       <div className="mt-4">
@@ -529,16 +523,13 @@ export default function Roles() {
                       </div>
                     )}
                     
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex justify-end">
                       <Button
                         type="button"
                         variant="outline"
                         onClick={() => setIsPermissionsModalOpen(false)}
                       >
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={assignPermissionMutation.isPending}>
-                        {assignPermissionMutation.isPending ? "Assigning..." : "Assign Permission"}
+                        Close
                       </Button>
                     </div>
                   </form>
