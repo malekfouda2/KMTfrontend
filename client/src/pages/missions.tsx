@@ -161,24 +161,19 @@ export default function Missions() {
   });
 
   const onSubmit = (data: MissionFormData) => {
-    // Convert time string (HH:mm) to TimeSpan ticks for KMT backend
-    const timeToTicks = (timeStr: string) => {
-      if (!timeStr) return 0;
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      return (hours * 60 + minutes) * 60 * 10000000; // Convert to .NET ticks
+    // Convert time string (HH:mm) to TimeSpan string format for KMT backend
+    const timeToTimeSpan = (timeStr: string) => {
+      if (!timeStr) return "00:00:00";
+      return `${timeStr}:00`; // Convert HH:mm to HH:mm:ss format
     };
 
     const formattedData = {
       description: data.description,
       descriptionAr: data.descriptionAr,
       missionDate: new Date(data.missionDate).toISOString(),
-      startTime: {
-        ticks: timeToTicks(data.startTime)
-      },
+      startTime: timeToTimeSpan(data.startTime),
       ...(data.endTime && {
-        endTime: {
-          ticks: timeToTicks(data.endTime)
-        }
+        endTime: timeToTimeSpan(data.endTime)
       }),
       location: data.location,
     };

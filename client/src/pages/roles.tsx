@@ -118,7 +118,9 @@ export default function Roles() {
         id: role.id,
         name: role.name,
         description: role.description || '',
-        permissions: role.permissions || [],
+        permissions: Array.isArray(role.permissions) 
+          ? role.permissions.map((p: any) => typeof p === 'string' ? p : p.description || p.code || p.id)
+          : [],
         userCount: role.userCount || 0
       }))
     : [];
