@@ -210,17 +210,21 @@ class KMTApiClient {
   }
 
   async createMission(mission: any) {
-    // Use proper field mapping for KMT backend
+    // Try different request structures for KMT backend
     const createMissionRequest = {
-      Description: mission.description,
-      DescriptionAr: mission.descriptionAr,
-      MissionDate: mission.missionDate,
-      StartTime: mission.startTime,
-      ...(mission.endTime && { EndTime: mission.endTime }),
-      Location: mission.location
+      name: "Mission " + Date.now(),
+      nameAr: "مهمة " + Date.now(),
+      description: mission.description,
+      descriptionAr: mission.descriptionAr,
+      startDate: mission.missionDate,
+      endDate: mission.missionDate,
+      location: mission.location,
+      locationAr: mission.location,
+      status: "Pending",
+      priority: "Medium"
     };
     
-    console.log('Creating mission with proper field mapping:', createMissionRequest);
+    console.log('Creating mission with name/status fields:', createMissionRequest);
     
     return this.request<any>("/Mission", {
       method: "POST",
@@ -481,8 +485,16 @@ class KMTApiClient {
   }
 
   async assignPermission(roleId: string, permission: string) {
-    return this.request<any>(`/Role/${roleId}/permissions/${permission}`, {
-      method: "PUT",
+    // Try different permission assignment endpoints
+    console.log(`Trying to assign permission ${permission} to role ${roleId}`);
+    
+    // Try with POST to Role/AssignPermission
+    return this.request<any>("/Role/AssignPermission", {
+      method: "POST",
+      body: JSON.stringify({ 
+        roleId: roleId,
+        permissionId: permission 
+      }),
     });
   }
 }
