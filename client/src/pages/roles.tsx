@@ -570,6 +570,8 @@ export default function Roles() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleManagePermissions(role)}
+                    disabled
+                    title="Permissions assignment endpoint is commented out in KMT backend"
                   >
                     <Shield className="w-4 h-4 mr-1" />
                     Permissions
