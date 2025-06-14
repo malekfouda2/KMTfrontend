@@ -32,7 +32,16 @@ export default function Employees() {
     queryKey: ["/api/User", filters, search],
     queryFn: async () => {
       try {
-        const result = await apiClient.getUsers({ ...filters, search });
+        // Build proper search and filter parameters for KMT backend
+        const searchParams = {
+          search: search || undefined,
+          departmentId: filters.department || undefined,
+          status: filters.status || undefined,
+          pageNumber: 1,
+          pageSize: 50
+        };
+        
+        const result = await apiClient.getUsers(searchParams);
         console.log('Users/Employees fetched:', result);
         
         // API client now automatically extracts data from KMT response structure

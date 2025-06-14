@@ -105,13 +105,29 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - **Environment Variables**: DATABASE_URL for database connection
 - **Build Process**: Vite build + esbuild for server bundling
 
+## Current Backend Integration Status
+
+### Completed Fixes
+- ✅ Fixed CreateUserRequest structure to match KMT backend
+- ✅ Enhanced KMT API client with proper response structure handling
+- ✅ Fixed Super Admin role permissions and navigation access
+- ✅ Added search/filtering functionality for employees
+- ✅ Updated leave management to use CreateLeaveRequestRequest format
+
+### Completed
+- ✅ Employee form validation and department assignment (all CreateUserRequest fields)
+- ✅ Leave types integration and form completion (CreateLeaveRequestRequest structure)
+- ✅ Search parameters optimization (proper query parameter mapping)
+- ✅ TimeSpan format handling for leave requests
+- ✅ Gender enum mapping (1=Male, 2=Female)
+
 ## Changelog
 
 - June 14, 2025: Initial setup
 - June 14, 2025: Major backend integration overhaul
-  - Fixed CreateUserRequest structure to match KMT backend
-  - Updated leave management to use CreateLeaveRequestRequest format
-  - Enhanced search/filtering functionality for employees
+  - Fixed CreateUserRequest structure to match KMT backend (username, email, phoneNumber, password, titleId, departmentId, hireDate, priorWorkExperienceMonths, gender)
+  - Updated leave management to use CreateLeaveRequestRequest format (leaveTypeId, startDate, endDate, isHourlyLeave, startTime)
+  - Enhanced search/filtering functionality for employees with proper query parameters
   - Added proper KMT API client with response structure handling
   - Fixed Super Admin role permissions and navigation access
 

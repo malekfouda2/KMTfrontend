@@ -276,7 +276,7 @@ class KMTApiClient {
       startDate: request.startDate,
       endDate: request.endDate,
       isHourlyLeave: request.isHourlyLeave || false,
-      startTime: request.startTime || null
+      startTime: request.startTime ? { ticks: 0 } : null // Convert time string to TimeSpan format if needed
     };
     return this.request<any>("/LeaveRequest", {
       method: "POST",
