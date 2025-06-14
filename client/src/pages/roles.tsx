@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Shield, Users, Edit, Trash2, UserPlus, CheckCircle } from "lucide-react";
+import { Plus, Shield, Users, Edit, Trash2, UserPlus, CheckCircle, X } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -228,13 +228,32 @@ export default function Roles() {
         description: "Permission assigned successfully",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/Role'] });
-      setIsPermissionsModalOpen(false);
       permissionForm.reset();
     },
     onError: (error: Error) => {
       toast({
         title: "Error",
         description: error.message || "Failed to assign permission",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const removePermissionMutation = useMutation({
+    mutationFn: ({ roleId, permissionId }: { roleId: string; permissionId: string }) => {
+      return apiClient.removePermission(roleId, permissionId);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Permission removed successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/Role'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove permission",
         variant: "destructive",
       });
     },
@@ -512,13 +531,36 @@ export default function Roles() {
                     
                     {selectedRole && selectedRole.permissions.length > 0 && (
                       <div className="mt-4">
-                        <h4 className="font-semibold mb-2">Current Permissions:</h4>
+                        <h4 className="font-semibold mb-2">Current Permissions (click to remove):</h4>
                         <div className="flex flex-wrap gap-2">
-                          {selectedRole.permissions.map((permission: string, index: number) => (
-                            <Badge key={index} variant="secondary">
-                              {permission}
-                            </Badge>
-                          ))}
+                          {selectedRole.permissions.map((permission: string, index: number) => {
+                            // Find the full permission object to get the ID
+                            const fullPermission = Array.isArray(permissionsData) 
+                              ? permissionsData.find((p: any) => p.description === permission || p.code === permission)
+                              : null;
+                            const permissionId = fullPermission?.id || permission;
+                            
+                            return (
+                              <Button
+                                key={index}
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => {
+                                  if (selectedRole) {
+                                    removePermissionMutation.mutate({
+                                      roleId: selectedRole.id.toString(),
+                                      permissionId: permissionId
+                                    });
+                                  }
+                                }}
+                                className="h-6 px-2 py-1 text-xs hover:bg-red-100 hover:text-red-700 transition-colors"
+                                disabled={removePermissionMutation.isPending}
+                              >
+                                <span className="mr-1">{permission}</span>
+                                <X className="w-3 h-3" />
+                              </Button>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

@@ -502,6 +502,27 @@ class KMTApiClient {
       }),
     });
   }
+
+  async removePermission(roleId: string, permissionId: string) {
+    // First get the current role to get existing permissions
+    const currentRole = await this.request<any>(`/Role/${roleId}`);
+    const existingPermissionIds = currentRole.permissions ? currentRole.permissions.map((p: any) => p.id) : [];
+    
+    // Remove permission from the list
+    const updatedPermissionIds = existingPermissionIds.filter((id: string) => id !== permissionId);
+    
+    // Update role with updated permissions array
+    return this.request<any>(`/Role/${roleId}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        name: currentRole.name,
+        nameAr: currentRole.nameAr,
+        description: currentRole.description,
+        descriptionAr: currentRole.descriptionAr,
+        permissionIds: updatedPermissionIds
+      }),
+    });
+  }
 }
 
 export const kmtApiClient = new KMTApiClient(KMT_API_BASE_URL);
