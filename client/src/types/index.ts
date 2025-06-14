@@ -1,6 +1,6 @@
 export * from "@shared/schema";
 
-export type UserRole = "general_manager" | "hr_manager" | "team_leader";
+export type UserRole = "general_manager" | "hr_manager" | "team_leader" | "Super Admin" | "Admin" | "HR Manager" | "Team Leader" | "Manager" | "Employee";
 
 export type NavigationItem = {
   id: string;

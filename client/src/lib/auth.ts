@@ -47,7 +47,12 @@ export const authService = {
   hasRole: (user: User | null, requiredRoles: string[]): boolean => {
     if (!user) return false;
     
-    // Map KMT backend roles to our frontend role system
+    // Direct role check for KMT backend roles
+    if (requiredRoles.includes(user.role)) {
+      return true;
+    }
+    
+    // Fallback mapping for backwards compatibility
     const roleMapping: { [key: string]: string[] } = {
       "Super Admin": ["general_manager", "hr_manager", "team_leader"],
       "Admin": ["hr_manager", "team_leader"],
@@ -72,7 +77,9 @@ export const authService = {
       canViewMissions: true,
     };
 
+    // Handle both KMT backend role names and frontend role names
     switch (user.role) {
+      case "Super Admin":
       case "general_manager":
         return {
           ...basePermissions,
@@ -81,8 +88,14 @@ export const authService = {
           canViewAnalytics: true,
           canApproveAll: true,
           canAssignMissions: true,
+          canManageDepartments: true,
+          canManageRoles: true,
+          canViewReports: true,
+          canDeleteRecords: true,
         };
 
+      case "Admin":
+      case "HR Manager":
       case "hr_manager":
         return {
           ...basePermissions,
@@ -91,16 +104,22 @@ export const authService = {
           canViewAnalytics: true,
           canApproveLeave: true,
           canManageAttendance: true,
+          canManageDepartments: true,
+          canViewReports: true,
         };
 
+      case "Manager":
+      case "Team Leader":
       case "team_leader":
         return {
           ...basePermissions,
           canApproveTeamAttendance: true,
           canApproveTeamLeave: true,
           canViewTeamData: true,
+          canManageTeamMembers: true,
         };
 
+      case "Employee":
       default:
         return basePermissions;
     }

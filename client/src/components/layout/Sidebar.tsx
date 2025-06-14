@@ -33,7 +33,7 @@ const navigationItems: NavigationItem[] = [
     label: "Employees",
     icon: "Users",
     route: "/employees",
-    roles: ["general_manager", "hr_manager"],
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
   },
   {
     id: "attendance",
@@ -58,28 +58,28 @@ const navigationItems: NavigationItem[] = [
     label: "Policies",
     icon: "Settings",
     route: "/policies",
-    roles: ["general_manager", "hr_manager"],
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
   },
   {
     id: "analytics",
     label: "Analytics",
     icon: "TrendingUp",
     route: "/analytics",
-    roles: ["general_manager", "hr_manager"],
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
   },
   {
     id: "departments",
     label: "Departments",
     icon: "Building2",
     route: "/departments",
-    roles: ["general_manager", "hr_manager"],
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
   },
   {
     id: "roles",
     label: "Roles",
     icon: "Shield",
     route: "/roles",
-    roles: ["general_manager", "hr_manager"],
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
   },
 ];
 
