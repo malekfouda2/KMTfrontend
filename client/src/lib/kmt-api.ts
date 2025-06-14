@@ -469,13 +469,37 @@ class KMTApiClient {
 
   // Role assignment
   async assignRole(userId: string, roleId: string) {
-    return this.request<any>(`/UserRole`, {
-      method: "POST",
-      body: JSON.stringify({ 
-        userId: userId,
-        roleIds: [roleId]
-      }),
-    });
+    console.log('Assigning role:', { userId, roleId });
+    
+    // Test multiple possible UserRole endpoint variations
+    const endpointVariations = [
+      `/UserRole`,
+      `/User/${userId}/Role`,
+      `/User/${userId}/roles`,
+      `/UserRole/${userId}`,
+      `/api/UserRole`,
+      `/UserRoles`
+    ];
+    
+    for (const endpoint of endpointVariations) {
+      try {
+        console.log(`Trying endpoint: ${endpoint}`);
+        const result = await this.request<any>(endpoint, {
+          method: "POST",
+          body: JSON.stringify({ 
+            userId: userId,
+            roleIds: [roleId]
+          }),
+        });
+        console.log(`Success with endpoint: ${endpoint}`);
+        return result;
+      } catch (error: any) {
+        console.log(`Failed with ${endpoint}:`, error.message);
+        continue;
+      }
+    }
+    
+    throw new Error('All UserRole endpoint variations failed. Please check the KMT backend API documentation for the correct UserRole assignment endpoint.');
   }
 
   // Permissions
