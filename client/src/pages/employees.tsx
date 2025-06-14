@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
-import { Employee, FilterParams } from "@/types";
+import { KMTUser, FilterParams } from "@/types";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { EmployeeTable } from "@/components/employees/EmployeeTable";
 import { AddEmployeeModal } from "@/components/employees/AddEmployeeModal";
@@ -109,12 +109,12 @@ export default function Employees() {
   console.log("Departments loading:", departmentsLoading);
   console.log("Titles loading:", titlesLoading);
 
-  const handleViewEmployee = (employee: Employee) => {
+  const handleViewEmployee = (employee: KMTUser) => {
     // TODO: Implement employee detail view
     console.log("View employee:", employee);
   };
 
-  const handleEditEmployee = (employee: Employee) => {
+  const handleEditEmployee = (employee: KMTUser) => {
     // TODO: Implement employee edit modal
     console.log("Edit employee:", employee);
   };

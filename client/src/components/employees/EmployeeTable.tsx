@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
-import { Employee } from "@/types";
+import { KMTUser } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -33,9 +33,9 @@ import {
 import { Eye, Edit, Trash2, MoreVertical, MoreHorizontal } from "lucide-react";
 
 interface EmployeeTableProps {
-  employees: Employee[];
-  onEditEmployee: (employee: Employee) => void;
-  onViewEmployee: (employee: Employee) => void;
+  employees: KMTUser[];
+  onEditEmployee: (employee: KMTUser) => void;
+  onViewEmployee: (employee: KMTUser) => void;
 }
 
 export const EmployeeTable = ({
@@ -43,7 +43,7 @@ export const EmployeeTable = ({
   onEditEmployee,
   onViewEmployee,
 }: EmployeeTableProps) => {
-  const [deleteEmployeeId, setDeleteEmployeeId] = useState<number | null>(null);
+  const [deleteEmployeeId, setDeleteEmployeeId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -187,14 +187,14 @@ export const EmployeeTable = ({
             <div className="flex items-start space-x-3">
               <Avatar className="w-12 h-12">
                 <AvatarFallback className="bg-primary text-white text-sm font-medium">
-                  {getInitials(employee.firstName, employee.lastName)}
+                  {employee.username ? employee.username.substring(0, 2).toUpperCase() : 'UN'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 truncate text-sm">
-                      {employee.firstName} {employee.lastName}
+                      {employee.username || 'Unknown User'}
                     </h3>
                     <p className="text-xs text-gray-500 truncate mt-1">{employee.email}</p>
                   </div>
@@ -226,24 +226,24 @@ export const EmployeeTable = ({
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-500">Department:</span>
-                    <p className="font-medium text-xs capitalize">{employee.department}</p>
+                    <p className="font-medium text-xs capitalize">{employee.department?.name || 'No Department'}</p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">Position:</span>
-                    <p className="font-medium text-xs">{employee.position}</p>
+                    <span className="text-xs text-gray-500">Title:</span>
+                    <p className="font-medium text-xs">{employee.title?.name || 'No Title'}</p>
                   </div>
                   <div className="flex items-center justify-between pt-2">
                     <Badge
                       variant="secondary"
-                      className={`${getEmployeeTypeColor(employee.employeeType)} text-xs`}
+                      className="bg-blue-100 text-blue-800 text-xs"
                     >
-                      {employee.employeeType}
+                      Employee
                     </Badge>
                     <Badge
                       variant="secondary"
-                      className={`${getStatusColor(employee.isActive)} text-xs`}
+                      className="bg-green-100 text-green-800 text-xs"
                     >
-                      {employee.isActive !== null ? (employee.isActive ? "Active" : "Inactive") : "Unknown"}
+                      Active
                     </Badge>
                   </div>
                 </div>

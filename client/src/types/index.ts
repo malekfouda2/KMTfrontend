@@ -40,3 +40,30 @@ export type FilterParams = {
   dateFrom?: string;
   dateTo?: string;
 };
+
+// KMT Backend UserResponse structure
+export type KMTUser = {
+  id: string;
+  username: string;
+  email: string;
+  phoneNumber: string;
+  department?: {
+    id: string;
+    name: string;
+    nameAr: string;
+    description: string;
+    descriptionAr: string;
+    createdAt: string;
+    userCount?: number;
+  };
+  title?: {
+    id: string;
+    name: string;
+    nameAr: string;
+    description: string;
+    descriptionAr: string;
+    createdAt: string;
+  };
+  createdAt: string;
+  updatedAt?: string;
+};
