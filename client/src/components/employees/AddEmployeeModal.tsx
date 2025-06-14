@@ -103,9 +103,20 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
     },
     onError: (error: Error) => {
       console.error("Create employee error:", error);
+      
+      // Ensure error message is a string
+      let errorMessage = "Failed to add employee";
+      if (error && typeof error === 'object') {
+        if (error.message && typeof error.message === 'string') {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
+      }
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to add employee",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -113,7 +124,19 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
 
   const onSubmit = (data: UserFormData) => {
     console.log("Submitting employee data:", data);
-    createEmployeeMutation.mutate(data);
+    
+    // Ensure all fields are properly formatted
+    const formattedData = {
+      ...data,
+      titleId: data.titleId || undefined,
+      departmentId: data.departmentId || undefined,
+      hireDate: data.hireDate ? new Date(data.hireDate).toISOString() : new Date().toISOString(),
+      priorWorkExperienceMonths: Number(data.priorWorkExperienceMonths) || 0,
+      gender: Number(data.gender) || 1
+    };
+    
+    console.log("Formatted employee data:", formattedData);
+    createEmployeeMutation.mutate(formattedData);
   };
 
   return (
@@ -209,7 +232,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                       <SelectContent>
                         {titles.map((title: any) => (
                           <SelectItem key={title.id} value={title.id}>
-                            {title.name}
+                            {title.name || title.nameAr || 'Unknown Title'}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -234,7 +257,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                       <SelectContent>
                         {departments.map((department: any) => (
                           <SelectItem key={department.id} value={department.id}>
-                            {department.name}
+                            {department.name || department.nameAr || 'Unknown Department'}
                           </SelectItem>
                         ))}
                       </SelectContent>

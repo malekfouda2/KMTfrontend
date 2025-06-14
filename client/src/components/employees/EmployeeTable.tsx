@@ -111,37 +111,37 @@ export const EmployeeTable = ({
                   <div className="flex items-center space-x-3">
                     <Avatar>
                       <AvatarFallback className="bg-gray-300 text-gray-600">
-                        {getInitials(employee.firstName, employee.lastName)}
+                        {employee.username ? employee.username.substring(0, 2).toUpperCase() : 'UN'}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="font-medium text-gray-900">
-                        {employee.firstName} {employee.lastName}
+                        {employee.username || 'Unknown User'}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {employee.email}
+                        {employee.email || 'No email'}
                       </div>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="capitalize">
-                  {employee.department}
+                  {employee.department?.name || 'No Department'}
                 </TableCell>
-                <TableCell>{employee.position}</TableCell>
+                <TableCell>{employee.title?.name || 'No Title'}</TableCell>
                 <TableCell>
                   <Badge
                     variant="secondary"
-                    className={getEmployeeTypeColor(employee.employeeType)}
+                    className="bg-blue-100 text-blue-800"
                   >
-                    {employee.employeeType}
+                    Employee
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge
                     variant="secondary"
-                    className={getStatusColor(employee.isActive)}
+                    className="bg-green-100 text-green-800"
                   >
-                    {employee.isActive !== null ? (employee.isActive ? "Active" : "Inactive") : "Unknown"}
+                    Active
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
