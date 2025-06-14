@@ -137,6 +137,8 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ TimeSpan format handling for leave requests
 - ✅ Gender enum mapping (1=Male, 2=Female)
 - ✅ Fixed KMTUser type mapping to prevent React object rendering errors
+- ✅ Mission creation fixed with exact KMT CreateMissionRequest DTO structure
+- ✅ Permissions assignment implemented via role update endpoint with permissions array
 
 ## Changelog
 

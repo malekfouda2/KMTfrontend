@@ -481,11 +481,24 @@ class KMTApiClient {
   }
 
   async assignPermission(roleId: string, permissionId: string) {
-    // Use PUT to assign permission to role based on KMT backend structure
-    return this.request<any>(`/Role/${roleId}/permissions`, {
+    // First get the current role to get existing permissions
+    const currentRole = await this.request<any>(`/Role/${roleId}`);
+    const existingPermissionIds = currentRole.permissions ? currentRole.permissions.map((p: any) => p.id) : [];
+    
+    // Add new permission if not already present
+    const updatedPermissionIds = existingPermissionIds.includes(permissionId) 
+      ? existingPermissionIds 
+      : [...existingPermissionIds, permissionId];
+    
+    // Update role with new permissions array using role update endpoint
+    return this.request<any>(`/Role/${roleId}`, {
       method: "PUT",
-      body: JSON.stringify({ 
-        permissionIds: [permissionId]
+      body: JSON.stringify({
+        name: currentRole.name,
+        nameAr: currentRole.nameAr,
+        description: currentRole.description,
+        descriptionAr: currentRole.descriptionAr,
+        permissionIds: updatedPermissionIds
       }),
     });
   }
