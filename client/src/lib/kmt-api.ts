@@ -210,21 +210,17 @@ class KMTApiClient {
   }
 
   async createMission(mission: any) {
-    // Try different request structures for KMT backend
+    // Use exact CreateMissionRequest structure from KMT backend
     const createMissionRequest = {
-      name: "Mission " + Date.now(),
-      nameAr: "مهمة " + Date.now(),
-      description: mission.description,
-      descriptionAr: mission.descriptionAr,
-      startDate: mission.missionDate,
-      endDate: mission.missionDate,
-      location: mission.location,
-      locationAr: mission.location,
-      status: "Pending",
-      priority: "Medium"
+      Description: mission.description,
+      DescriptionAr: mission.descriptionAr,
+      MissionDate: mission.missionDate,
+      StartTime: mission.startTime,
+      ...(mission.endTime && { EndTime: mission.endTime }),
+      Location: mission.location
     };
     
-    console.log('Creating mission with name/status fields:', createMissionRequest);
+    console.log('Creating mission with exact KMT DTO structure:', createMissionRequest);
     
     return this.request<any>("/Mission", {
       method: "POST",
