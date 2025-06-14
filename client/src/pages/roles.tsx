@@ -28,8 +28,14 @@ const assignRoleSchema = z.object({
   roleId: z.string().min(1, "Role is required"),
 });
 
+const assignPermissionSchema = z.object({
+  roleId: z.string().min(1, "Role is required"),
+  permission: z.string().min(1, "Permission is required"),
+});
+
 type RoleFormData = z.infer<typeof roleSchema>;
 type AssignRoleFormData = z.infer<typeof assignRoleSchema>;
+type AssignPermissionFormData = z.infer<typeof assignPermissionSchema>;
 
 interface Role {
   id: number;
@@ -50,6 +56,8 @@ interface User {
 export default function Roles() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -81,6 +89,23 @@ export default function Roles() {
         return Array.isArray(result) ? result : [];
       } catch (error: any) {
         console.error('Error fetching users:', error);
+        return [];
+      }
+    },
+    retry: false,
+  });
+
+  const { data: permissionsData = [] } = useQuery({
+    queryKey: ['/api/Permission'],
+    queryFn: async () => {
+      try {
+        const result = await apiClient.getPermissions();
+        console.log('Permissions fetched:', result);
+        
+        // API client automatically extracts data from KMT response structure
+        return Array.isArray(result) ? result : [];
+      } catch (error: any) {
+        console.error('Error fetching permissions:', error);
         return [];
       }
     },
@@ -124,6 +149,14 @@ export default function Roles() {
     defaultValues: {
       userId: "",
       roleId: "",
+    },
+  });
+
+  const permissionForm = useForm<AssignPermissionFormData>({
+    resolver: zodResolver(assignPermissionSchema),
+    defaultValues: {
+      roleId: "",
+      permission: "",
     },
   });
 
@@ -178,6 +211,28 @@ export default function Roles() {
       toast({
         title: "Error",
         description: error.message || "Failed to assign role",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const assignPermissionMutation = useMutation({
+    mutationFn: (data: AssignPermissionFormData) => {
+      return apiClient.assignPermission(data.roleId, data.permission);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Permission assigned successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/Role'] });
+      setIsPermissionsModalOpen(false);
+      permissionForm.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign permission",
         variant: "destructive",
       });
     },

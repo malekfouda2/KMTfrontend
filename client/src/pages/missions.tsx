@@ -363,9 +363,22 @@ export default function Missions() {
                       name="location"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Location</FormLabel>
+                          <FormLabel>Location (English)</FormLabel>
                           <FormControl>
-                            <Input placeholder="Mission location" {...field} />
+                            <Input placeholder="Mission location in English" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="locationAr"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Location (Arabic)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="موقع المهمة بالعربية" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -375,26 +388,47 @@ export default function Missions() {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="startTime"
+                      name="status"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Start Time</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} />
-                          </FormControl>
+                          <FormLabel>Status</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="approved">Approved</SelectItem>
+                              <SelectItem value="in_progress">In Progress</SelectItem>
+                              <SelectItem value="completed">Completed</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                     <FormField
                       control={form.control}
-                      name="endTime"
+                      name="priority"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>End Time (Optional)</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} />
-                          </FormControl>
+                          <FormLabel>Priority</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select priority" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                              <SelectItem value="urgent">Urgent</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
