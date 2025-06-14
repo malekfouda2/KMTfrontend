@@ -36,13 +36,15 @@ interface AddEmployeeModalProps {
 }
 
 const userFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
   username: z.string().min(1, "Username is required"),
   email: z.string().email("Invalid email format"),
+  phoneNumber: z.string().min(1, "Phone number is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.string().min(1, "Role is required"),
-  department: z.string().min(1, "Department is required"),
-  isActive: z.boolean().default(true),
+  titleId: z.string().optional(),
+  departmentId: z.string().optional(),
+  hireDate: z.string().min(1, "Hire date is required"),
+  priorWorkExperienceMonths: z.number().min(0, "Experience must be non-negative"),
+  gender: z.number().min(1).max(2), // 1 = Male, 2 = Female
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
@@ -51,7 +53,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch departments and roles for dropdowns
+  // Fetch departments and titles for dropdowns
   const { data: departmentsData, isLoading: deptLoading } = useQuery({
     queryKey: ["/api/Department"],
     queryFn: async () => {
@@ -62,13 +64,13 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
     },
   });
 
-  const { data: rolesData } = useQuery({
-    queryKey: ["/api/Role"],
-    queryFn: () => apiClient.getRoles(),
+  const { data: titlesData } = useQuery({
+    queryKey: ["/api/Title"],
+    queryFn: () => apiClient.getTitles(),
   });
 
   const departments = Array.isArray(departmentsData) ? departmentsData : [];
-  const roles = Array.isArray(rolesData) ? rolesData : [];
+  const titles = Array.isArray(titlesData) ? titlesData : [];
   
   console.log("AddEmployeeModal: Final departments:", departments);
   console.log("AddEmployeeModal: Department loading:", deptLoading);
@@ -76,13 +78,15 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      name: "",
       username: "",
       email: "",
+      phoneNumber: "",
       password: "",
-      role: "",
-      department: "",
-      isActive: true,
+      titleId: "",
+      departmentId: "",
+      hireDate: new Date().toISOString().split('T')[0],
+      priorWorkExperienceMonths: 0,
+      gender: 1,
     },
   });
 
@@ -98,21 +102,23 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
       onOpenChange(false);
     },
     onError: (error: Error) => {
+      console.error("Create employee error:", error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to add employee",
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: UserFormData) => {
+    console.log("Submitting employee data:", data);
     createEmployeeMutation.mutate(data);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Employee</DialogTitle>
         </DialogHeader>
@@ -120,20 +126,6 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="username"
@@ -155,7 +147,29 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                   <FormItem>
                     <FormLabel>Email *</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Enter email" {...field} />
+                      <Input 
+                        type="email" 
+                        placeholder="Enter email address" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="tel" 
+                        placeholder="Enter phone number" 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -169,7 +183,11 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                   <FormItem>
                     <FormLabel>Password *</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter password" {...field} />
+                      <Input 
+                        type="password" 
+                        placeholder="Enter password" 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -178,26 +196,22 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
 
               <FormField
                 control={form.control}
-                name="role"
+                name="titleId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Title</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
+                          <SelectValue placeholder="Select title" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {roles.length > 0 ? (
-                          roles.map((role: any) => (
-                            <SelectItem key={role.id} value={role.name}>
-                              {role.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-roles" disabled>No roles available</SelectItem>
-                        )}
+                        {titles.map((title: any) => (
+                          <SelectItem key={title.id} value={title.id}>
+                            {title.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -207,28 +221,81 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
 
               <FormField
                 control={form.control}
-                name="department"
+                name="departmentId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Department</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select department" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {deptLoading ? (
-                          <SelectItem value="loading" disabled>Loading departments...</SelectItem>
-                        ) : departments.length > 0 ? (
-                          departments.map((dept: any) => (
-                            <SelectItem key={dept.id} value={dept.name}>
-                              {dept.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-departments" disabled>No departments available</SelectItem>
-                        )}
+                        {departments.map((department: any) => (
+                          <SelectItem key={department.id} value={department.id}>
+                            {department.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="hireDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hire Date *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="date" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="priorWorkExperienceMonths"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Prior Experience (Months)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min="0"
+                        placeholder="0" 
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender *</FormLabel>
+                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1">Male</SelectItem>
+                        <SelectItem value="2">Female</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -237,24 +304,23 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
               />
             </div>
 
-            <div className="flex items-center justify-end space-x-4 pt-6 border-t">
-              <Button
-                type="button"
-                variant="outline"
+            <div className="flex justify-end space-x-4 pt-6">
+              <Button 
+                type="button" 
+                variant="outline" 
                 onClick={() => onOpenChange(false)}
                 disabled={createEmployeeMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createEmployeeMutation.isPending}>
-                {createEmployeeMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Adding...
-                  </>
-                ) : (
-                  "Add Employee"
+              <Button 
+                type="submit" 
+                disabled={createEmployeeMutation.isPending}
+              >
+                {createEmployeeMutation.isPending && (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}
+                Add Employee
               </Button>
             </div>
           </form>

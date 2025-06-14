@@ -101,9 +101,21 @@ class KMTApiClient {
   }
 
   async createUser(user: any) {
+    // Map frontend user data to KMT CreateUserRequest format
+    const createUserRequest = {
+      username: user.username,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      password: user.password,
+      titleId: user.titleId || null,
+      departmentId: user.departmentId || null,
+      hireDate: user.hireDate || new Date().toISOString(),
+      priorWorkExperienceMonths: user.priorWorkExperienceMonths || 0,
+      gender: user.gender || 1 // Default to Male (1) if not specified
+    };
     return this.request<any>("/User", {
       method: "POST",
-      body: JSON.stringify(user),
+      body: JSON.stringify(createUserRequest),
     });
   }
 
@@ -233,9 +245,17 @@ class KMTApiClient {
   }
 
   async createLeaveRequest(request: any) {
+    // Map frontend leave request data to KMT CreateLeaveRequestRequest format
+    const createLeaveRequest = {
+      leaveTypeId: request.leaveTypeId,
+      startDate: request.startDate,
+      endDate: request.endDate,
+      isHourlyLeave: request.isHourlyLeave || false,
+      startTime: request.startTime || null
+    };
     return this.request<any>("/LeaveRequest", {
       method: "POST",
-      body: JSON.stringify(request),
+      body: JSON.stringify(createLeaveRequest),
     });
   }
 
