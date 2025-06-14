@@ -43,11 +43,11 @@ export default function Employees() {
           searchParams.search = search.trim();
         }
         
-        if (filters.department && filters.department !== "all" && filters.department !== "") {
+        if (filters.department && filters.department !== "all") {
           searchParams.departmentId = filters.department;
         }
         
-        if (filters.employeeType && filters.employeeType !== "all" && filters.employeeType !== "") {
+        if (filters.employeeType && filters.employeeType !== "all") {
           searchParams.titleId = filters.employeeType;
         }
         
@@ -191,7 +191,7 @@ export default function Employees() {
                     <SelectValue placeholder="All Departments" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Departments</SelectItem>
+                    <SelectItem value="all">All Departments</SelectItem>
                     {departments.map((dept: any) => (
                       <SelectItem key={dept.id} value={dept.id.toString()}>
                         {dept.name}
@@ -212,7 +212,7 @@ export default function Employees() {
                     <SelectValue placeholder="All Titles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Titles</SelectItem>
+                    <SelectItem value="all">All Titles</SelectItem>
                     {titles.map((title: any) => (
                       <SelectItem key={title.id} value={title.id.toString()}>
                         {title.name}

@@ -29,6 +29,7 @@ interface Department {
   name: string;
   description: string;
   employeeCount?: number;
+  createdAt?: string;
 }
 
 export default function Departments() {
@@ -40,12 +41,12 @@ export default function Departments() {
 
   // Fetch employees for the selected department
   const { data: departmentEmployees = [] } = useQuery({
-    queryKey: ['/api/User', selectedDepartment?.id],
+    queryKey: ['/api/User', 'department', selectedDepartment?.id],
     queryFn: async () => {
       if (!selectedDepartment?.id) return [];
       try {
-        const result = await apiClient.getUsers({ departmentId: selectedDepartment.id });
-        console.log('Department employees fetched:', result);
+        const result = await apiClient.getUsers({ departmentId: selectedDepartment.id.toString() });
+        console.log('Department employees fetched for department', selectedDepartment.id, ':', result);
         return Array.isArray(result) ? result : [];
       } catch (error: any) {
         console.error('Error fetching department employees:', error);
@@ -79,7 +80,8 @@ export default function Departments() {
         id: dept.id,
         name: dept.name,
         description: dept.description,
-        employeeCount: dept.userCount || 0
+        employeeCount: dept.userCount || 0,
+        createdAt: dept.createdAt
       }))
     : [];
 
@@ -372,8 +374,10 @@ export default function Departments() {
                         <span className="font-medium">{departmentEmployees.length}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-xs text-gray-500">Department ID:</span>
-                        <span className="font-medium">{selectedDepartment.id}</span>
+                        <span className="text-xs text-gray-500">Created:</span>
+                        <span className="font-medium">
+                          {selectedDepartment.createdAt ? new Date(selectedDepartment.createdAt).toLocaleDateString() : 'N/A'}
+                        </span>
                       </div>
                     </CardContent>
                   </Card>
