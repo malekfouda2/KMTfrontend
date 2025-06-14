@@ -483,8 +483,8 @@ export default function Roles() {
                             <SelectContent>
                               {Array.isArray(permissionsData) && permissionsData.length > 0 ? (
                                 permissionsData.map((permission: any) => (
-                                  <SelectItem key={permission.id || permission.code} value={permission.code || permission.id}>
-                                    {permission.description || permission.name || permission.code}
+                                  <SelectItem key={permission.id} value={permission.code}>
+                                    {permission.description}
                                   </SelectItem>
                                 ))
                               ) : (

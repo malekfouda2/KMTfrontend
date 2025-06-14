@@ -47,14 +47,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, MapPin, Calendar, User, Truck, Edit, Trash2, Loader2, CheckCircle, XCircle } from "lucide-react";
 
 const missionSchema = z.object({
-  name: z.string().min(1, "Mission name is required").max(200, "Name must be 200 characters or less"),
-  nameAr: z.string().optional(),
   description: z.string().min(1, "Description is required").max(500, "Description must be 500 characters or less"),
-  descriptionAr: z.string().optional(),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().optional(),
+  descriptionAr: z.string().min(1, "Arabic description is required").max(500, "Arabic description must be 500 characters or less"),
+  missionDate: z.string().min(1, "Mission date is required"),
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().optional(),
   location: z.string().min(1, "Location is required").max(200, "Location must be 200 characters or less"),
-  locationAr: z.string().optional(),
 });
 
 type MissionFormData = z.infer<typeof missionSchema>;
@@ -72,14 +70,12 @@ export default function Missions() {
   const form = useForm<MissionFormData>({
     resolver: zodResolver(missionSchema),
     defaultValues: {
-      name: "",
-      nameAr: "",
       description: "",
       descriptionAr: "",
-      startDate: "",
-      endDate: "",
+      missionDate: "",
+      startTime: "",
+      endTime: "",
       location: "",
-      locationAr: "",
     },
   });
 
@@ -165,15 +161,26 @@ export default function Missions() {
   });
 
   const onSubmit = (data: MissionFormData) => {
+    // Convert time string (HH:mm) to TimeSpan ticks for KMT backend
+    const timeToTicks = (timeStr: string) => {
+      if (!timeStr) return 0;
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return (hours * 60 + minutes) * 60 * 10000000; // Convert to .NET ticks
+    };
+
     const formattedData = {
-      name: data.name,
-      nameAr: data.nameAr || data.name,
       description: data.description,
-      descriptionAr: data.descriptionAr || data.description,
-      startDate: data.startDate, // Keep as YYYY-MM-DD format for KMT backend
-      ...(data.endDate && { endDate: data.endDate }),
+      descriptionAr: data.descriptionAr,
+      missionDate: new Date(data.missionDate).toISOString(),
+      startTime: {
+        ticks: timeToTicks(data.startTime)
+      },
+      ...(data.endTime && {
+        endTime: {
+          ticks: timeToTicks(data.endTime)
+        }
+      }),
       location: data.location,
-      locationAr: data.locationAr || data.location,
     };
     
     console.log('Form data before submission:', data);
@@ -269,34 +276,6 @@ export default function Missions() {
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mission Name (English)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Mission name in English" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="nameAr"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mission Name (Arabic)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="اسم المهمة بالعربية" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                   <FormField
                     control={form.control}
                     name="description"
@@ -326,10 +305,10 @@ export default function Missions() {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="startDate"
+                      name="missionDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Start Date</FormLabel>
+                          <FormLabel>Mission Date</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -339,12 +318,12 @@ export default function Missions() {
                     />
                     <FormField
                       control={form.control}
-                      name="endDate"
+                      name="location"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>End Date (Optional)</FormLabel>
+                          <FormLabel>Location</FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} />
+                            <Input placeholder="Mission location" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -354,12 +333,12 @@ export default function Missions() {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="location"
+                      name="startTime"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Location (English)</FormLabel>
+                          <FormLabel>Start Time</FormLabel>
                           <FormControl>
-                            <Input placeholder="Mission location in English" {...field} />
+                            <Input type="time" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -367,12 +346,12 @@ export default function Missions() {
                     />
                     <FormField
                       control={form.control}
-                      name="locationAr"
+                      name="endTime"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Location (Arabic)</FormLabel>
+                          <FormLabel>End Time (Optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="موقع المهمة بالعربية" {...field} />
+                            <Input type="time" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
