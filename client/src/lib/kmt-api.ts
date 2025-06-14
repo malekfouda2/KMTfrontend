@@ -210,19 +210,17 @@ class KMTApiClient {
   }
 
   async createMission(mission: any) {
-    // Wrap in request object as required by KMT backend
+    // Use proper field mapping for KMT backend
     const createMissionRequest = {
-      request: {
-        description: mission.description,
-        descriptionAr: mission.descriptionAr,
-        missionDate: mission.missionDate,
-        startTime: mission.startTime,
-        ...(mission.endTime && { endTime: mission.endTime }),
-        location: mission.location
-      }
+      Description: mission.description,
+      DescriptionAr: mission.descriptionAr,
+      MissionDate: mission.missionDate,
+      StartTime: mission.startTime,
+      ...(mission.endTime && { EndTime: mission.endTime }),
+      Location: mission.location
     };
     
-    console.log('Creating mission with KMT request wrapper:', createMissionRequest);
+    console.log('Creating mission with proper field mapping:', createMissionRequest);
     
     return this.request<any>("/Mission", {
       method: "POST",
@@ -483,9 +481,8 @@ class KMTApiClient {
   }
 
   async assignPermission(roleId: string, permission: string) {
-    return this.request<any>("/Permission/assign", {
-      method: "POST",
-      body: JSON.stringify({ roleId, permission }),
+    return this.request<any>(`/Role/${roleId}/permissions/${permission}`, {
+      method: "PUT",
     });
   }
 }
