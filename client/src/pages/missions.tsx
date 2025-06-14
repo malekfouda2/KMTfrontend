@@ -48,15 +48,13 @@ import { Plus, MapPin, Calendar, User, Truck, Edit, Trash2, Loader2, CheckCircle
 
 const missionSchema = z.object({
   name: z.string().min(1, "Mission name is required").max(200, "Name must be 200 characters or less"),
-  nameAr: z.string().min(1, "Arabic name is required").max(200, "Arabic name must be 200 characters or less"),
+  nameAr: z.string().optional(),
   description: z.string().min(1, "Description is required").max(500, "Description must be 500 characters or less"),
-  descriptionAr: z.string().min(1, "Arabic description is required").max(500, "Arabic description must be 500 characters or less"),
+  descriptionAr: z.string().optional(),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().optional(),
   location: z.string().min(1, "Location is required").max(200, "Location must be 200 characters or less"),
-  locationAr: z.string().min(1, "Arabic location is required").max(200, "Arabic location must be 200 characters or less"),
-  status: z.enum(["pending", "approved", "in_progress", "completed", "cancelled"]).default("pending"),
-  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+  locationAr: z.string().optional(),
 });
 
 type MissionFormData = z.infer<typeof missionSchema>;
@@ -82,8 +80,6 @@ export default function Missions() {
       endDate: "",
       location: "",
       locationAr: "",
-      status: "pending",
-      priority: "medium",
     },
   });
 
@@ -171,15 +167,13 @@ export default function Missions() {
   const onSubmit = (data: MissionFormData) => {
     const formattedData = {
       name: data.name,
-      nameAr: data.nameAr,
+      nameAr: data.nameAr || data.name,
       description: data.description,
-      descriptionAr: data.descriptionAr,
-      startDate: new Date(data.startDate).toISOString(),
-      ...(data.endDate && { endDate: new Date(data.endDate).toISOString() }),
+      descriptionAr: data.descriptionAr || data.description,
+      startDate: data.startDate, // Keep as YYYY-MM-DD format for KMT backend
+      ...(data.endDate && { endDate: data.endDate }),
       location: data.location,
-      locationAr: data.locationAr,
-      status: data.status,
-      priority: data.priority,
+      locationAr: data.locationAr || data.location,
     };
     
     console.log('Form data before submission:', data);
@@ -385,55 +379,7 @@ export default function Missions() {
                       )}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="approved">Approved</SelectItem>
-                              <SelectItem value="in_progress">In Progress</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="priority"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Priority</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select priority" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="low">Low</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="high">High</SelectItem>
-                              <SelectItem value="urgent">Urgent</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+
                   <div className="flex justify-end gap-2">
                     <Button
                       type="button"

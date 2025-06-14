@@ -211,20 +211,20 @@ class KMTApiClient {
 
   async createMission(mission: any) {
     // Map frontend mission data to KMT CreateMissionRequest format
+    // Based on KMT backend, likely needs simplified structure
     const createMissionRequest = {
       name: mission.name,
-      nameAr: mission.nameAr,
+      nameAr: mission.nameAr || mission.name,
       description: mission.description,
-      descriptionAr: mission.descriptionAr,
+      descriptionAr: mission.descriptionAr || mission.description,
       startDate: mission.startDate,
-      endDate: mission.endDate || null,
       location: mission.location,
-      locationAr: mission.locationAr,
-      status: mission.status || "pending",
-      priority: mission.priority || "medium"
+      locationAr: mission.locationAr || mission.location,
+      // Remove fields that might not exist in KMT backend
+      ...(mission.endDate && { endDate: mission.endDate })
     };
     
-    console.log('Creating mission with formatted data:', createMissionRequest);
+    console.log('Creating mission with simplified data:', createMissionRequest);
     
     return this.request<any>("/Mission", {
       method: "POST",

@@ -481,22 +481,32 @@ export default function Roles() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="users.read">View Users</SelectItem>
-                              <SelectItem value="users.write">Manage Users</SelectItem>
-                              <SelectItem value="roles.read">View Roles</SelectItem>
-                              <SelectItem value="roles.write">Manage Roles</SelectItem>
-                              <SelectItem value="departments.read">View Departments</SelectItem>
-                              <SelectItem value="departments.write">Manage Departments</SelectItem>
-                              <SelectItem value="missions.read">View Missions</SelectItem>
-                              <SelectItem value="missions.write">Manage Missions</SelectItem>
-                              <SelectItem value="attendance.read">View Attendance</SelectItem>
-                              <SelectItem value="attendance.write">Manage Attendance</SelectItem>
-                              <SelectItem value="leave.read">View Leave Requests</SelectItem>
-                              <SelectItem value="leave.write">Manage Leave Requests</SelectItem>
-                              <SelectItem value="policies.read">View Policies</SelectItem>
-                              <SelectItem value="policies.write">Manage Policies</SelectItem>
-                              <SelectItem value="analytics.read">View Analytics</SelectItem>
-                              <SelectItem value="system.admin">System Admin</SelectItem>
+                              {Array.isArray(permissionsData) && permissionsData.length > 0 ? (
+                                permissionsData.map((permission: any) => (
+                                  <SelectItem key={permission.id || permission.code} value={permission.code || permission.id}>
+                                    {permission.description || permission.name || permission.code}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <>
+                                  <SelectItem value="users.read">View Users</SelectItem>
+                                  <SelectItem value="users.write">Manage Users</SelectItem>
+                                  <SelectItem value="roles.read">View Roles</SelectItem>
+                                  <SelectItem value="roles.write">Manage Roles</SelectItem>
+                                  <SelectItem value="departments.read">View Departments</SelectItem>
+                                  <SelectItem value="departments.write">Manage Departments</SelectItem>
+                                  <SelectItem value="missions.read">View Missions</SelectItem>
+                                  <SelectItem value="missions.write">Manage Missions</SelectItem>
+                                  <SelectItem value="attendance.read">View Attendance</SelectItem>
+                                  <SelectItem value="attendance.write">Manage Attendance</SelectItem>
+                                  <SelectItem value="leave.read">View Leave Requests</SelectItem>
+                                  <SelectItem value="leave.write">Manage Leave Requests</SelectItem>
+                                  <SelectItem value="policies.read">View Policies</SelectItem>
+                                  <SelectItem value="policies.write">Manage Policies</SelectItem>
+                                  <SelectItem value="analytics.read">View Analytics</SelectItem>
+                                  <SelectItem value="system.admin">System Admin</SelectItem>
+                                </>
+                              )}
                             </SelectContent>
                           </Select>
                           <FormMessage />
