@@ -114,16 +114,21 @@ export default function Roles() {
 
   // Map the KMT backend role structure to our interface
   const roles: Role[] = Array.isArray(rolesData) 
-    ? rolesData.map((role: any) => ({
-        id: role.id,
-        name: role.name,
-        description: role.description || '',
-        permissions: Array.isArray(role.permissions) 
-          ? role.permissions.map((p: any) => typeof p === 'string' ? p : p.description || p.code || p.id)
-          : [],
-        userCount: role.userCount || 0
-      }))
+    ? rolesData.map((role: any) => {
+        console.log('Raw role data from backend:', role);
+        return {
+          id: role.id,
+          name: role.name,
+          description: role.description || '',
+          permissions: Array.isArray(role.permissions) 
+            ? role.permissions.map((p: any) => typeof p === 'string' ? p : p.description || p.code || p.id)
+            : [],
+          userCount: role.userCount || role.users?.length || 0
+        };
+      })
     : [];
+
+  console.log('Processed roles data:', roles);
 
   // Map the KMT backend user structure to our interface
   const users: User[] = Array.isArray(usersData) 
@@ -196,19 +201,31 @@ export default function Roles() {
 
   const assignRoleMutation = useMutation({
     mutationFn: (data: AssignRoleFormData) => {
+      console.log('Role assignment mutation data:', data);
       return apiClient.assignRole(data.userId, data.roleId);
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      console.log('Role assignment successful:', result);
       toast({
         title: "Success",
         description: "Role assigned successfully",
       });
+      
+      // Force refresh of both users and roles data
       queryClient.invalidateQueries({ queryKey: ['/api/User'] });
       queryClient.invalidateQueries({ queryKey: ['/api/Role'] });
+      
+      // Also try to refetch immediately to see updated data
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/User'] });
+        queryClient.refetchQueries({ queryKey: ['/api/Role'] });
+      }, 1000);
+      
       setIsAssignModalOpen(false);
       assignForm.reset();
     },
     onError: (error: Error) => {
+      console.error('Role assignment failed:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to assign role",

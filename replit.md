@@ -142,6 +142,7 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ Enhanced permissions UI by replacing dropdown with floating buttons for better user experience and direct selection
 - ✅ Added permission removal functionality with clickable current permissions and visual feedback
 - ✅ Updated role assignment to use UserRole endpoint with correct POST body format (userId, roleIds array)
+- ✅ Added comprehensive debugging for UserRole endpoint testing and data refresh issues
 
 ## Changelog
 

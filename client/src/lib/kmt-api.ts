@@ -471,35 +471,32 @@ class KMTApiClient {
   async assignRole(userId: string, roleId: string) {
     console.log('Assigning role:', { userId, roleId });
     
-    // Test multiple possible UserRole endpoint variations
-    const endpointVariations = [
-      `/UserRole`,
-      `/User/${userId}/Role`,
-      `/User/${userId}/roles`,
-      `/UserRole/${userId}`,
-      `/api/UserRole`,
-      `/UserRoles`
-    ];
-    
-    for (const endpoint of endpointVariations) {
-      try {
-        console.log(`Trying endpoint: ${endpoint}`);
-        const result = await this.request<any>(endpoint, {
-          method: "POST",
-          body: JSON.stringify({ 
-            userId: userId,
-            roleIds: [roleId]
-          }),
-        });
-        console.log(`Success with endpoint: ${endpoint}`);
-        return result;
-      } catch (error: any) {
-        console.log(`Failed with ${endpoint}:`, error.message);
-        continue;
-      }
+    // Try the UserRole endpoint with userId in the URL path
+    try {
+      const result = await this.request<any>(`/UserRole/${userId}`, {
+        method: "POST",
+        body: JSON.stringify({ 
+          roleIds: [roleId]
+        }),
+      });
+      
+      console.log('Role assignment result:', result);
+      return result;
+    } catch (error: any) {
+      console.log('UserRole/{userId} failed, trying UserRole with userId in body');
+      
+      // Fallback to original approach
+      const result = await this.request<any>(`/UserRole`, {
+        method: "POST",
+        body: JSON.stringify({ 
+          userId: userId,
+          roleIds: [roleId]
+        }),
+      });
+      
+      console.log('Role assignment result:', result);
+      return result;
     }
-    
-    throw new Error('All UserRole endpoint variations failed. Please check the KMT backend API documentation for the correct UserRole assignment endpoint.');
   }
 
   // Permissions
