@@ -38,6 +38,24 @@ export default function Departments() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Fetch employees for the selected department
+  const { data: departmentEmployees = [] } = useQuery({
+    queryKey: ['/api/User', selectedDepartment?.id],
+    queryFn: async () => {
+      if (!selectedDepartment?.id) return [];
+      try {
+        const result = await apiClient.getUsers({ departmentId: selectedDepartment.id });
+        console.log('Department employees fetched:', result);
+        return Array.isArray(result) ? result : [];
+      } catch (error: any) {
+        console.error('Error fetching department employees:', error);
+        return [];
+      }
+    },
+    enabled: !!selectedDepartment?.id,
+    retry: false,
+  });
+
   const { data: departmentsData = [], isLoading, error } = useQuery({
     queryKey: ['/api/Department'],
     queryFn: async () => {
@@ -314,24 +332,86 @@ export default function Departments() {
 
         {/* View Department Modal */}
         <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-          <DialogContent>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
             <DialogHeader>
               <DialogTitle>Department Details</DialogTitle>
             </DialogHeader>
             {selectedDepartment && (
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Department Name</label>
-                  <p className="text-lg font-semibold text-black">{selectedDepartment.name}</p>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Building2 className="w-4 h-4 mr-2" />
+                        Department Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <label className="text-xs text-gray-500">Department Name</label>
+                        <p className="font-medium">{selectedDepartment.name}</p>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500">Description</label>
+                        <p className="text-sm text-gray-600">{selectedDepartment.description}</p>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500">Employee Count</label>
+                        <p className="font-medium">{departmentEmployees.length} employees</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm font-medium">Department Statistics</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-xs text-gray-500">Total Employees:</span>
+                        <span className="font-medium">{departmentEmployees.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-gray-500">Department ID:</span>
+                        <span className="font-medium">{selectedDepartment.id}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Description</label>
-                  <p className="text-gray-900">{selectedDepartment.description}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Employee Count</label>
-                  <p className="text-gray-900">{selectedDepartment.employeeCount || 0} employees</p>
-                </div>
+
+                {/* Employees List */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium">Department Employees</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {departmentEmployees.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">No employees assigned to this department</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {departmentEmployees.map((employee: any) => (
+                          <div key={employee.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <span className="text-sm font-medium text-gray-600">
+                                  {employee.username?.charAt(0)?.toUpperCase() || 'U'}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="font-medium">{employee.username}</p>
+                                <p className="text-sm text-gray-500">{employee.email}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium">{employee.title?.name || 'No Title'}</p>
+                              <p className="text-xs text-gray-500">{employee.phoneNumber || 'No Phone'}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
           </DialogContent>

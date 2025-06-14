@@ -143,6 +143,11 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ Added permission removal functionality with clickable current permissions and visual feedback
 - ✅ Updated role assignment to use UserRole endpoint with correct POST body format (userId, roleIds array)
 - ✅ Added comprehensive debugging for UserRole endpoint testing and data refresh issues
+- ✅ Fixed employees page search and department/title filters with proper query parameters
+- ✅ Implemented employee details modal with comprehensive personal and work information
+- ✅ Removed policies tab from sidebar navigation
+- ✅ Enhanced department details modal to display assigned employees with avatars and contact info
+- ✅ Fixed leave management page with proper leave type display, employee information, and approve/decline actions
 
 ## Changelog
 

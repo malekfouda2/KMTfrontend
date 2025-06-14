@@ -109,6 +109,42 @@ export default function Leave() {
     },
   });
 
+  const approveLeaveRequestMutation = useMutation({
+    mutationFn: (id: number) => apiClient.approveLeaveRequest(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/LeaveRequest"] });
+      toast({
+        title: "Success",
+        description: "Leave request approved successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to approve leave request",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const rejectLeaveRequestMutation = useMutation({
+    mutationFn: (id: number) => apiClient.rejectLeaveRequest(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/LeaveRequest"] });
+      toast({
+        title: "Success",
+        description: "Leave request rejected successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reject leave request",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: LeaveFormData) => {
     console.log("Submitting leave request:", data);
     createLeaveMutation.mutate(data);
@@ -297,31 +333,76 @@ export default function Leave() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Employee</TableHead>
                       <TableHead>Leave Type</TableHead>
                       <TableHead>Start Date</TableHead>
                       <TableHead>End Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Created</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {leaves.map((leave: any) => (
-                      <TableRow key={leave.id}>
-                        <TableCell className="font-medium">
-                          {leave.leaveType?.name || "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(leave.startDate).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(leave.endDate).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(leave.status)}</TableCell>
-                        <TableCell>
-                          {leave.createdAt ? new Date(leave.createdAt).toLocaleDateString() : "N/A"}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {leaves.map((leave: any) => {
+                      console.log('Leave request data:', leave);
+                      
+                      // Find leave type name from leaveTypes array
+                      const leaveType = leaveTypes.find((type: any) => type.id === leave.leaveTypeId);
+                      const leaveTypeName = leaveType?.name || leave.leaveType?.name || "N/A";
+                      
+                      return (
+                        <TableRow key={leave.id}>
+                          <TableCell className="font-medium">
+                            <div>
+                              <p className="font-medium">{leave.user?.username || leave.createdBy || "Unknown"}</p>
+                              <p className="text-xs text-gray-500">{leave.user?.email || ""}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {leaveTypeName}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(leave.startDate).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(leave.endDate).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>{getStatusBadge(leave.status)}</TableCell>
+                          <TableCell>
+                            {leave.createdAt ? new Date(leave.createdAt).toLocaleDateString() : "N/A"}
+                          </TableCell>
+                          <TableCell>
+                            {leave.status?.toLowerCase() === "pending" && (
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-green-600 hover:bg-green-50"
+                                  onClick={() => approveLeaveRequestMutation.mutate(leave.id)}
+                                  disabled={approveLeaveRequestMutation.isPending}
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-red-600 hover:bg-red-50"
+                                  onClick={() => rejectLeaveRequestMutation.mutate(leave.id)}
+                                  disabled={rejectLeaveRequestMutation.isPending}
+                                >
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                  Decline
+                                </Button>
+                              </div>
+                            )}
+                            {leave.status?.toLowerCase() !== "pending" && (
+                              <span className="text-gray-500 text-sm">No actions</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
