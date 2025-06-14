@@ -92,7 +92,26 @@ class KMTApiClient {
 
   // Users
   async getUsers(params?: any) {
-    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    // Build proper query string with filtering support
+    const queryParams = new URLSearchParams();
+    
+    if (params?.search) {
+      queryParams.append('search', params.search);
+    }
+    if (params?.department) {
+      queryParams.append('departmentId', params.department);
+    }
+    if (params?.status) {
+      queryParams.append('status', params.status);
+    }
+    if (params?.pageNumber) {
+      queryParams.append('pageNumber', params.pageNumber.toString());
+    }
+    if (params?.pageSize) {
+      queryParams.append('pageSize', params.pageSize.toString());
+    }
+    
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
     return this.request<any[]>(`/User${queryString}`);
   }
 
@@ -236,6 +255,12 @@ class KMTApiClient {
     return this.request<any>(`/Mission/${id}`, {
       method: "DELETE",
     });
+  }
+
+  // Leave Types
+  async getLeaveTypes(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/LeaveType${queryString}`);
   }
 
   // Leave Requests

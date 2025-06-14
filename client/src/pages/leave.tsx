@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { apiClient } from "@/lib/api";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -44,229 +46,222 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Calendar, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
-interface LeaveFormData {
-  type: string;
-  startDate: string;
-  endDate: string;
-  reason: string;
-}
+// KMT Backend CreateLeaveRequestRequest structure
+const leaveFormSchema = z.object({
+  leaveTypeId: z.string().min(1, "Leave type is required"),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().min(1, "End date is required"),
+  isHourlyLeave: z.boolean().default(false),
+  startTime: z.string().optional(),
+});
+
+type LeaveFormData = z.infer<typeof leaveFormSchema>;
 
 export default function Leave() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: leaveRequestsData, isLoading } = useQuery({
-    queryKey: ["/api/LeaveRequests"],
-    queryFn: async () => {
-      try {
-        const result = await apiClient.getLeaveRequests();
-        console.log('Leave requests fetched:', result);
-        
-        // Handle KMT backend response structure: { data: [...], message: "...", success: true }
-        if (result && typeof result === 'object' && 'data' in result) {
-          const responseData = (result as { data: any[] }).data;
-          if (Array.isArray(responseData)) {
-            return responseData;
-          }
-        }
-        
-        // If response is already an array, return as is
-        if (Array.isArray(result)) {
-          return result;
-        }
-        
-        return [];
-      } catch (error: any) {
-        console.error('Error fetching leave requests:', error);
-        throw error;
-      }
-    },
-    retry: false,
+  // Fetch leave types for dropdown
+  const { data: leaveTypesData, isLoading: leaveTypesLoading } = useQuery({
+    queryKey: ["/api/LeaveType"],
+    queryFn: () => apiClient.getLeaveTypes(),
   });
 
-  const leaveRequests = Array.isArray(leaveRequestsData) ? leaveRequestsData : [];
+  // Fetch leave requests
+  const { data: leaveRequests, isLoading: leaveRequestsLoading } = useQuery({
+    queryKey: ["/api/LeaveRequest"],
+    queryFn: () => apiClient.getLeaveRequests(),
+  });
+
+  const leaveTypes = Array.isArray(leaveTypesData) ? leaveTypesData : [];
+  const leaves = Array.isArray(leaveRequests) ? leaveRequests : [];
 
   const form = useForm<LeaveFormData>({
+    resolver: zodResolver(leaveFormSchema),
     defaultValues: {
-      type: "",
+      leaveTypeId: "",
       startDate: "",
       endDate: "",
-      reason: "",
+      isHourlyLeave: false,
+      startTime: "",
     },
   });
 
-  const createLeaveRequestMutation = useMutation({
+  const createLeaveMutation = useMutation({
     mutationFn: (leaveData: LeaveFormData) => apiClient.createLeaveRequest(leaveData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/LeaveRequests"] });
-      setShowCreateModal(false);
-      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/LeaveRequest"] });
       toast({
         title: "Success",
         description: "Leave request submitted successfully",
       });
+      form.reset();
+      setShowCreateModal(false);
     },
     onError: (error: Error) => {
+      console.error("Create leave request error:", error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to submit leave request",
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: LeaveFormData) => {
-    createLeaveRequestMutation.mutate(data);
+    console.log("Submitting leave request:", data);
+    createLeaveMutation.mutate(data);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusBadge = (status: string) => {
+    switch (status?.toLowerCase()) {
       case "approved":
-        return "bg-green-100 text-green-800";
+        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
       case "rejected":
-        return "bg-red-100 text-red-800";
+        return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
     }
-  };
-
-  const getLeaveTypeColor = (type: string) => {
-    switch (type) {
-      case "vacation":
-        return "bg-blue-100 text-blue-800";
-      case "sick":
-        return "bg-red-100 text-red-800";
-      case "personal":
-        return "bg-purple-100 text-purple-800";
-      case "emergency":
-        return "bg-orange-100 text-orange-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   return (
-    <MainLayout title="Leave Management" breadcrumb="Home">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <MainLayout title="Leave Management">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-secondary">Leave Management</h2>
-            <p className="text-gray-600">Manage employee leave requests and approvals</p>
+            <h1 className="text-3xl font-bold text-black mb-2">Leave Management</h1>
+            <p className="text-gray-600">Manage your leave requests and view leave history</p>
           </div>
           <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                New Leave Request
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Request Leave
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Submit Leave Request</DialogTitle>
+                <DialogTitle>Create Leave Request</DialogTitle>
                 <DialogDescription>
-                  Fill in the details for your leave request
+                  Submit a new leave request for approval.
                 </DialogDescription>
               </DialogHeader>
+
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="type"
+                    name="leaveTypeId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Leave Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel>Leave Type *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select leave type" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="vacation">Vacation</SelectItem>
-                            <SelectItem value="sick">Sick Leave</SelectItem>
-                            <SelectItem value="personal">Personal</SelectItem>
-                            <SelectItem value="emergency">Emergency</SelectItem>
+                            {leaveTypesLoading ? (
+                              <SelectItem value="loading" disabled>Loading...</SelectItem>
+                            ) : (
+                              leaveTypes.map((type: any) => (
+                                <SelectItem key={type.id} value={type.id}>
+                                  {type.name}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Start Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="endDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>End Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+
                   <FormField
                     control={form.control}
-                    name="reason"
+                    name="startDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Reason</FormLabel>
+                        <FormLabel>Start Date *</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Please provide a reason for your leave request"
-                            rows={3}
-                            {...field} 
-                          />
+                          <Input type="date" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
+
+                  <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Date *</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isHourlyLeave"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Hourly Leave</FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Enable if this is an hourly leave request
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch 
+                            checked={field.value} 
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("isHourlyLeave") && (
+                    <FormField
+                      control={form.control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start Time</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  <div className="flex justify-end space-x-4 pt-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
                       onClick={() => setShowCreateModal(false)}
-                      disabled={createLeaveRequestMutation.isPending}
+                      disabled={createLeaveMutation.isPending}
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={createLeaveRequestMutation.isPending}>
-                      {createLeaveRequestMutation.isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        "Submit Request"
+                    <Button 
+                      type="submit" 
+                      disabled={createLeaveMutation.isPending}
+                    >
+                      {createLeaveMutation.isPending && (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       )}
+                      Submit Request
                     </Button>
                   </div>
                 </form>
@@ -275,102 +270,58 @@ export default function Leave() {
           </Dialog>
         </div>
 
-        {/* Leave Requests Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Leave Requests</CardTitle>
+            <CardTitle className="text-black">Leave Requests</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-6">
-                <div className="space-y-4">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex items-center space-x-4">
-                      <Skeleton className="h-4 w-1/4" />
-                      <Skeleton className="h-4 w-1/6" />
-                      <Skeleton className="h-4 w-1/6" />
-                      <Skeleton className="h-4 w-1/6" />
-                      <Skeleton className="h-4 w-1/6" />
-                      <Skeleton className="h-8 w-20" />
-                    </div>
-                  ))}
-                </div>
+          <CardContent>
+            {leaveRequestsLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center space-x-4">
+                    <Skeleton className="h-4 w-[100px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[100px]" />
+                    <Skeleton className="h-4 w-[80px]" />
+                  </div>
+                ))}
+              </div>
+            ) : leaves.length === 0 ? (
+              <div className="text-center py-8">
+                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No leave requests found</p>
+                <p className="text-sm text-gray-400">Submit your first leave request to get started</p>
               </div>
             ) : (
-              <div className="rounded-md border">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Employee</TableHead>
                       <TableHead>Leave Type</TableHead>
                       <TableHead>Start Date</TableHead>
                       <TableHead>End Date</TableHead>
-                      <TableHead>Days</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>Created</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(leaveRequests || []).map((request: any) => (
-                      <TableRow key={request.id}>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium text-gray-900">
-                              Employee {request.employeeId}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {request.reason}
-                            </div>
-                          </div>
+                    {leaves.map((leave: any) => (
+                      <TableRow key={leave.id}>
+                        <TableCell className="font-medium">
+                          {leave.leaveType?.name || "N/A"}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant="secondary"
-                            className={getLeaveTypeColor(request.leaveType)}
-                          >
-                            {request.leaveType}
-                          </Badge>
+                          {new Date(leave.startDate).toLocaleDateString()}
                         </TableCell>
-                        <TableCell>{formatDate(request.startDate)}</TableCell>
-                        <TableCell>{formatDate(request.endDate)}</TableCell>
-                        <TableCell>{request.days}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant="secondary"
-                            className={getStatusColor(request.status)}
-                          >
-                            {request.status}
-                          </Badge>
+                          {new Date(leave.endDate).toLocaleDateString()}
                         </TableCell>
-                        <TableCell className="text-right">
-                          {request.status === "pending" && (
-                            <div className="flex items-center justify-end space-x-2">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-green-600 hover:text-green-700"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          )}
+                        <TableCell>{getStatusBadge(leave.status)}</TableCell>
+                        <TableCell>
+                          {leave.createdAt ? new Date(leave.createdAt).toLocaleDateString() : "N/A"}
                         </TableCell>
                       </TableRow>
                     ))}
-                    {(!leaveRequests || leaveRequests.length === 0) && (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-6">
-                          <p className="text-gray-500">No leave requests found</p>
-                        </TableCell>
-                      </TableRow>
-                    )}
                   </TableBody>
                 </Table>
               </div>

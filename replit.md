@@ -107,7 +107,13 @@ This is a comprehensive HR Management System built with React.js frontend and in
 
 ## Changelog
 
-- June 14, 2025. Initial setup
+- June 14, 2025: Initial setup
+- June 14, 2025: Major backend integration overhaul
+  - Fixed CreateUserRequest structure to match KMT backend
+  - Updated leave management to use CreateLeaveRequestRequest format
+  - Enhanced search/filtering functionality for employees
+  - Added proper KMT API client with response structure handling
+  - Fixed Super Admin role permissions and navigation access
 
 ## User Preferences
 
