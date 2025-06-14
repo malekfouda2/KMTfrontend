@@ -141,7 +141,7 @@ export default function Missions() {
   const users = Array.isArray(usersData) ? usersData : [];
 
   const createMissionMutation = useMutation({
-    mutationFn: (mission: MissionFormData) => apiClient.createMission(mission),
+    mutationFn: (mission: any) => apiClient.createMission(mission),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/Mission"] });
       setShowCreateModal(false);
@@ -186,7 +186,7 @@ export default function Missions() {
     console.log('Form data before submission:', data);
     console.log('Formatted data for backend:', formattedData);
     
-    createMissionMutation.mutate(formattedData);
+    createMissionMutation.mutate(formattedData as any);
   };
 
   const assignMissionMutation = useMutation({
