@@ -1,5 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -181,12 +182,13 @@ export default function LeaveBalance() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Leave Balance Management</h1>
-          <p className="text-gray-600">Manage employee leave balances and allocations</p>
-        </div>
+    <MainLayout title="Leave Balance" breadcrumb="Management / Leave Balance">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Leave Balance Management</h1>
+            <p className="text-gray-600">Manage employee leave balances and allocations</p>
+          </div>
         <Button
           onClick={handleResetBalances}
           variant="outline"
@@ -348,6 +350,7 @@ export default function LeaveBalance() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </MainLayout>
   );
 }

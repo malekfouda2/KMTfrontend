@@ -48,7 +48,10 @@ export const EmployeeTable = ({
   const queryClient = useQueryClient();
 
   const deleteEmployeeMutation = useMutation({
-    mutationFn: (id: string) => apiClient.deleteUser(id),
+    mutationFn: (id: string) => {
+      console.log('Deleting employee with ID:', id);
+      return apiClient.deleteUser(id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/User"] });
       toast({
@@ -58,11 +61,13 @@ export const EmployeeTable = ({
       setDeleteEmployeeId(null);
     },
     onError: (error: Error) => {
+      console.error('Delete employee error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: `Failed to delete employee: ${error.message}`,
         variant: "destructive",
       });
+      setDeleteEmployeeId(null);
     },
   });
 

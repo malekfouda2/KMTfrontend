@@ -161,21 +161,23 @@ export default function Missions() {
   });
 
   const onSubmit = (data: MissionFormData) => {
-    // Convert time string (HH:mm) to TimeSpan string format for KMT backend
-    const timeToTimeSpan = (timeStr: string) => {
-      if (!timeStr) return "00:00:00";
-      return `${timeStr}:00`; // Convert HH:mm to HH:mm:ss format
+    // Convert time string (HH:mm) to integer minutes for KMT backend
+    const timeToMinutes = (timeStr: string) => {
+      if (!timeStr) return 0;
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + minutes;
     };
 
     const formattedData = {
       description: data.description,
       descriptionAr: data.descriptionAr,
       missionDate: new Date(data.missionDate).toISOString(),
-      startTime: timeToTimeSpan(data.startTime),
+      startTime: timeToMinutes(data.startTime),
       ...(data.endTime && {
-        endTime: timeToTimeSpan(data.endTime)
+        endTime: timeToMinutes(data.endTime)
       }),
       location: data.location,
+      request: data.description, // Add required request field
     };
     
     console.log('Form data before submission:', data);
