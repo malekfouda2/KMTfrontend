@@ -16,7 +16,7 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - **Form Handling**: React Hook Form with Zod validation
 
 ### Backend Integration
-- **Primary Backend**: KMT Backend (http://localhost:5114/api)
+- **Primary Backend**: KMT Backend (https://1dfd82980d7b.ngrok-free.app/api)
 - **Fallback**: Local Express.js server for development/mock data
 - **Authentication**: JWT token-based authentication
 - **API Response Format**: KMT-specific structure `{ data: [...], message: "...", success: true }`
@@ -149,6 +149,23 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ Enhanced department details modal to display assigned employees with avatars and contact info
 - ✅ Fixed leave management page with proper leave type display, employee information, and approve/decline actions
 
+### Major Backend Integration Update (July 15, 2025)
+- ✅ Updated base URL to https://1dfd82980d7b.ngrok-free.app/api
+- ✅ Comprehensive API client overhaul with all new KMT Backend endpoints
+- ✅ Added LeaveBalance management endpoints (User/{userId}, Reset, etc.)
+- ✅ Enhanced User Role assignment with proper User/{userId}/Roles endpoint
+- ✅ Added Mission transportation and assignment endpoints
+- ✅ Implemented Title management endpoints
+- ✅ Added Permission management endpoints
+- ✅ Updated Leave Request endpoints with Approve/Reject actions
+- ✅ Enhanced Department Leave Request filtering
+- ✅ Added User Password management endpoints
+- ✅ Fixed Mission assignment with proper user arrays
+- ✅ Updated all endpoint methods to match new KMT backend structure
+- ✅ Enhanced error handling and response processing for new backend
+- ✅ Added client-side filtering fallback for employees and departments
+- ✅ Removed deprecated endpoints and updated method signatures
+
 ## Changelog
 
 - June 14, 2025: Initial setup
@@ -158,6 +175,15 @@ This is a comprehensive HR Management System built with React.js frontend and in
   - Enhanced search/filtering functionality for employees with proper query parameters
   - Added proper KMT API client with response structure handling
   - Fixed Super Admin role permissions and navigation access
+
+- July 15, 2025: Comprehensive Backend Integration Update
+  - Updated base URL to new ngrok endpoint (https://1dfd82980d7b.ngrok-free.app/api)
+  - Complete API client rewrite with all new KMT Backend endpoints from Postman collection
+  - Added comprehensive LeaveBalance, Permission, Title management endpoints
+  - Enhanced User Role assignment and Mission management with proper endpoint structure
+  - Fixed all endpoint methods to match new backend structure (POST vs PATCH vs PUT)
+  - Added client-side filtering fallback and enhanced error handling
+  - Removed deprecated endpoints and updated method signatures
 
 ## User Preferences
 

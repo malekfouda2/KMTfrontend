@@ -1,6 +1,6 @@
 import { authService } from "./auth";
 
-const KMT_API_BASE_URL = "http://localhost:5114/api";
+const KMT_API_BASE_URL = "https://1dfd82980d7b.ngrok-free.app/api";
 
 interface KMTResponse<T> {
   data: T;
@@ -203,6 +203,133 @@ class KMTApiClient {
     });
   }
 
+  // Titles
+  async getTitles(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/Title${queryString}`);
+  }
+
+  async createTitle(title: any) {
+    return this.request<any>("/Title", {
+      method: "POST",
+      body: JSON.stringify(title),
+    });
+  }
+
+  async updateTitle(id: string, title: any) {
+    return this.request<any>(`/Title/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(title),
+    });
+  }
+
+  async deleteTitle(id: string) {
+    return this.request<any>(`/Title/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Permissions
+  async getPermissions() {
+    return this.request<any[]>("/Permission");
+  }
+
+  async getPermission(id: string) {
+    return this.request<any>(`/Permission/${id}`);
+  }
+
+  // Leave Balance
+  async getLeaveBalance(userId: string, year?: number) {
+    const queryString = year ? `?year=${year}` : "";
+    return this.request<any>(`/LeaveBalance/User/${userId}${queryString}`);
+  }
+
+  async getLeaveBalanceById(id: string) {
+    return this.request<any>(`/LeaveBalance/${id}`);
+  }
+
+  async updateLeaveBalance(id: string, leaveBalance: any) {
+    return this.request<any>(`/LeaveBalance/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(leaveBalance),
+    });
+  }
+
+  async resetLeaveBalance(year?: number) {
+    const queryString = year ? `?year=${year}` : "";
+    return this.request<any>(`/LeaveBalance/Reset${queryString}`, {
+      method: "POST",
+    });
+  }
+
+  // User Role Assignment
+  async assignUserRoles(userId: string, roleIds: string[]) {
+    return this.request<any>(`/User/${userId}/Roles`, {
+      method: "POST",
+      body: JSON.stringify({ roleIds }),
+    });
+  }
+
+  async getUserRoles(userId: string) {
+    return this.request<any[]>(`/User/${userId}/Roles`);
+  }
+
+  // User Password Management
+  async changeUserPassword(userId: string, passwordData: any) {
+    return this.request<any>(`/User/${userId}/Password`, {
+      method: "PUT",
+      body: JSON.stringify(passwordData),
+    });
+  }
+
+  // Mission Transportation
+  async updateMissionTransportation(id: string, transportationDetails: any) {
+    return this.request<any>(`/Mission/${id}/transportation`, {
+      method: "PUT",
+      body: JSON.stringify(transportationDetails),
+    });
+  }
+
+  // Mission Assignments
+  async assignMissionToUsers(missionId: string, userIds: string[]) {
+    return this.request<any>(`/Mission/${missionId}/assignments`, {
+      method: "POST",
+      body: JSON.stringify({ userIds }),
+    });
+  }
+
+  async removeMissionAssignments(missionId: string, userIds: string[]) {
+    return this.request<any>(`/Mission/${missionId}/assignments`, {
+      method: "DELETE",
+      body: JSON.stringify({ userIds }),
+    });
+  }
+
+  // Leave Request Specific Operations
+  async approveLeaveRequest(id: string, comments?: string) {
+    return this.request<any>(`/LeaveRequest/${id}/Approve`, {
+      method: "POST",
+      body: JSON.stringify({ comments }),
+    });
+  }
+
+  async rejectLeaveRequest(id: string, comments?: string) {
+    return this.request<any>(`/LeaveRequest/${id}/Reject`, {
+      method: "POST",
+      body: JSON.stringify({ comments }),
+    });
+  }
+
+  async getUserLeaveRequests(userId: string, params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/LeaveRequest/User/${userId}${queryString}`);
+  }
+
+  async getDepartmentLeaveRequests(departmentId: string, params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/LeaveRequest/Department/${departmentId}${queryString}`);
+  }
+
   // Missions
   async getMissions(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
@@ -359,19 +486,9 @@ class KMTApiClient {
     });
   }
 
-  // Mission assignment and transportation
+  // Mission assignment (updated for new backend)
   async assignMission(id: string, userId: string) {
-    return this.request<any>(`/Mission/${id}/assign`, {
-      method: "PATCH",
-      body: JSON.stringify({ userId }),
-    });
-  }
-
-  async updateMissionTransportation(id: string, transportationDetails: any) {
-    return this.request<any>(`/Mission/${id}/transportation`, {
-      method: "PATCH",
-      body: JSON.stringify(transportationDetails),
-    });
+    return this.assignMissionToUsers(id, [userId]);
   }
 
   // Employee methods (aliases for Users)
@@ -445,17 +562,17 @@ class KMTApiClient {
     }));
   }
 
-  // Leave request approval methods
+  // Leave request approval methods (updated for new backend)
   async approveLeaveRequest(id: number, comments?: string) {
-    return this.request<any>(`/LeaveRequest/${id}/approve`, {
-      method: "PATCH",
+    return this.request<any>(`/LeaveRequest/${id}/Approve`, {
+      method: "POST",
       body: JSON.stringify({ comments }),
     });
   }
 
   async rejectLeaveRequest(id: number, comments?: string) {
-    return this.request<any>(`/LeaveRequest/${id}/reject`, {
-      method: "PATCH",
+    return this.request<any>(`/LeaveRequest/${id}/Reject`, {
+      method: "POST",  
       body: JSON.stringify({ comments }),
     });
   }
@@ -467,38 +584,9 @@ class KMTApiClient {
     });
   }
 
-  // Role assignment
+  // Role assignment (updated for new backend)
   async assignRole(userId: string, roleId: string) {
-    console.log('Assigning role:', { userId, roleId });
-    
-    // Test various UserRole endpoint patterns based on common REST API patterns
-    const endpointVariations = [
-      { url: `/User/${userId}/Role`, body: { roleIds: [roleId] } },
-      { url: `/User/${userId}/Roles`, body: { roleIds: [roleId] } },
-      { url: `/UserRole/${userId}`, body: { roleIds: [roleId] } },
-      { url: `/UserRole`, body: { userId: userId, roleIds: [roleId] } },
-      { url: `/Role/assign`, body: { userId: userId, roleId: roleId } },
-      { url: `/User/${userId}/assignRole`, body: { roleId: roleId } },
-      { url: `/api/UserRole`, body: { userId: userId, roleIds: [roleId] } }
-    ];
-    
-    for (const variation of endpointVariations) {
-      try {
-        console.log(`Trying: POST ${variation.url}`, variation.body);
-        const result = await this.request<any>(variation.url, {
-          method: "POST",
-          body: JSON.stringify(variation.body),
-        });
-        
-        console.log(`✅ SUCCESS with: POST ${variation.url}`, result);
-        return result;
-      } catch (error: any) {
-        console.log(`❌ Failed: POST ${variation.url} - ${error.message}`);
-        continue;
-      }
-    }
-    
-    throw new Error('All UserRole endpoint variations failed. The KMT backend may not have implemented role assignment endpoints yet.');
+    return this.assignUserRoles(userId, [roleId]);
   }
 
   // Permissions
