@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -221,7 +221,9 @@ export default function Missions() {
     },
   });
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return "bg-gray-100 text-gray-800";
+    
     switch (status) {
       case "approved":
         return "bg-green-100 text-green-800";
@@ -438,11 +440,11 @@ export default function Missions() {
                             variant="secondary"
                             className={getStatusColor(mission.status)}
                           >
-                            {mission.status.replace("_", " ")}
+                            {mission.status ? mission.status.replace("_", " ") : "Unknown"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          {mission.status === "pending" && (
+                          {mission.status && mission.status === "pending" && (
                             <Button
                               size="sm"
                               variant="ghost"
