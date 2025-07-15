@@ -166,6 +166,31 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ Added client-side filtering fallback for employees and departments
 - ✅ Removed deprecated endpoints and updated method signatures
 
+### New Frontend Pages and Features (July 15, 2025)
+- ✅ Created comprehensive Leave Balance management page (/leave-balance)
+  - Employee leave balance tracking with visual progress indicators
+  - Leave type integration and balance updates
+  - Year-based filtering and bulk balance reset functionality
+  - Real-time balance calculation and remaining days display
+- ✅ Created Job Titles management page (/titles)
+  - Bilingual title management (English/Arabic)
+  - Title CRUD operations with proper validation
+  - Employee count tracking per title
+  - Comprehensive search and filtering capabilities
+- ✅ Created Leave Types management page (/leave-types)
+  - Leave type configuration with max days, carry over, and approval settings
+  - Bilingual support for leave type names and descriptions
+  - Visual indicators for leave type policies
+  - Color-coded leave type management
+- ✅ Enhanced API client with LeaveType management endpoints
+  - Create, read, update, delete leave types
+  - Proper form validation and error handling
+  - Integration with existing leave management system
+- ✅ Updated routing system to include all new pages
+- ✅ Enhanced sidebar navigation with new management sections
+- ✅ Fixed duplicate method issues in KMT API client
+- ✅ Improved error handling and user feedback throughout the application
+
 ## Changelog
 
 - June 14, 2025: Initial setup
@@ -184,6 +209,15 @@ This is a comprehensive HR Management System built with React.js frontend and in
   - Fixed all endpoint methods to match new backend structure (POST vs PATCH vs PUT)
   - Added client-side filtering fallback and enhanced error handling
   - Removed deprecated endpoints and updated method signatures
+
+- July 15, 2025: New Frontend Pages and Features Implementation
+  - Created comprehensive Leave Balance management page with visual progress indicators
+  - Implemented Job Titles management page with bilingual support and CRUD operations
+  - Added Leave Types management page with policy configuration and approval settings
+  - Enhanced API client with LeaveType management endpoints
+  - Updated routing system and sidebar navigation for all new pages
+  - Fixed duplicate method issues in KMT API client
+  - Improved error handling and user feedback throughout the application
 
 ## User Preferences
 

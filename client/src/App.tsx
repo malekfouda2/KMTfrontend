@@ -16,6 +16,9 @@ import Policies from "@/pages/policies";
 import Analytics from "@/pages/analytics";
 import Departments from "@/pages/departments";
 import Roles from "@/pages/roles";
+import Titles from "@/pages/titles";
+import LeaveBalance from "@/pages/leave-balance";
+import LeaveTypes from "@/pages/leave-types";
 import NotFound from "@/pages/not-found";
 
 function AuthenticatedRoutes() {
@@ -37,6 +40,9 @@ function AuthenticatedRoutes() {
       <Route path="/analytics" component={Analytics} />
       <Route path="/departments" component={Departments} />
       <Route path="/roles" component={Roles} />
+      <Route path="/titles" component={Titles} />
+      <Route path="/leave-balance" component={LeaveBalance} />
+      <Route path="/leave-types" component={LeaveTypes} />
       <Route component={NotFound} />
     </Switch>
   );

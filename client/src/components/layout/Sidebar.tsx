@@ -53,7 +53,20 @@ const navigationItems: NavigationItem[] = [
     icon: "Briefcase",
     route: "/missions",
   },
-
+  {
+    id: "leave-balance",
+    label: "Leave Balance",
+    icon: "Calendar",
+    route: "/leave-balance",
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
+  },
+  {
+    id: "leave-types",
+    label: "Leave Types",
+    icon: "Calendar",
+    route: "/leave-types",
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
+  },
   {
     id: "analytics",
     label: "Analytics",
@@ -73,6 +86,13 @@ const navigationItems: NavigationItem[] = [
     label: "Roles",
     icon: "Shield",
     route: "/roles",
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
+  },
+  {
+    id: "titles",
+    label: "Job Titles",
+    icon: "Briefcase",
+    route: "/titles",
     roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
   },
 ];

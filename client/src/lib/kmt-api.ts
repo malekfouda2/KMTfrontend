@@ -374,6 +374,27 @@ class KMTApiClient {
     return this.request<any[]>(`/LeaveType${queryString}`);
   }
 
+  // Leave Type management
+  async createLeaveType(leaveType: any) {
+    return this.request<any>("/LeaveType", {
+      method: "POST",
+      body: JSON.stringify(leaveType),
+    });
+  }
+
+  async updateLeaveType(id: string, leaveType: any) {
+    return this.request<any>(`/LeaveType/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(leaveType),
+    });
+  }
+
+  async deleteLeaveType(id: string) {
+    return this.request<any>(`/LeaveType/${id}`, {
+      method: "DELETE",
+    });
+  }
+
   // Leave Requests
   async getLeaveRequests(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
@@ -460,32 +481,6 @@ class KMTApiClient {
     });
   }
 
-  // Titles
-  async getTitles(params?: any) {
-    const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request<any[]>(`/Title${queryString}`);
-  }
-
-  async createTitle(title: any) {
-    return this.request<any>("/Title", {
-      method: "POST",
-      body: JSON.stringify(title),
-    });
-  }
-
-  async updateTitle(id: string, title: any) {
-    return this.request<any>(`/Title/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(title),
-    });
-  }
-
-  async deleteTitle(id: string) {
-    return this.request<any>(`/Title/${id}`, {
-      method: "DELETE",
-    });
-  }
-
   // Mission assignment (updated for new backend)
   async assignMission(id: string, userId: string) {
     return this.assignMissionToUsers(id, [userId]);
@@ -562,20 +557,7 @@ class KMTApiClient {
     }));
   }
 
-  // Leave request approval methods (updated for new backend)
-  async approveLeaveRequest(id: number, comments?: string) {
-    return this.request<any>(`/LeaveRequest/${id}/Approve`, {
-      method: "POST",
-      body: JSON.stringify({ comments }),
-    });
-  }
 
-  async rejectLeaveRequest(id: number, comments?: string) {
-    return this.request<any>(`/LeaveRequest/${id}/Reject`, {
-      method: "POST",  
-      body: JSON.stringify({ comments }),
-    });
-  }
 
   // Attendance approval
   async approveAttendance(id: number) {
@@ -587,11 +569,6 @@ class KMTApiClient {
   // Role assignment (updated for new backend)
   async assignRole(userId: string, roleId: string) {
     return this.assignUserRoles(userId, [roleId]);
-  }
-
-  // Permissions
-  async getPermissions() {
-    return this.request<any[]>("/Permission");
   }
 
   async assignPermission(roleId: string, permissionId: string) {
