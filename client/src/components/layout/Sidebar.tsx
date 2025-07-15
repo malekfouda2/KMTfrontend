@@ -17,6 +17,9 @@ import {
   Shield,
   Menu,
   X,
+  Gift,
+  AlertTriangle,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -68,6 +71,48 @@ const navigationItems: NavigationItem[] = [
     roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
   },
   {
+    id: "check-in-out",
+    label: "Check In/Out",
+    icon: "Clock",
+    route: "/check-in-out",
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
+  },
+  {
+    id: "overtime",
+    label: "Overtime",
+    icon: "Clock",
+    route: "/overtime",
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
+  },
+  {
+    id: "late-arrival",
+    label: "Late Arrival",
+    icon: "AlertTriangle",
+    route: "/late-arrival",
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
+  },
+  {
+    id: "bonus",
+    label: "Bonus",
+    icon: "Gift",
+    route: "/bonus",
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
+  },
+  {
+    id: "penalty",
+    label: "Penalty",
+    icon: "AlertTriangle",
+    route: "/penalty",
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
+  },
+  {
+    id: "payroll",
+    label: "Payroll",
+    icon: "DollarSign",
+    route: "/payroll",
+    roles: ["Super Admin", "Admin", "HR Manager", "general_manager", "hr_manager"] as any,
+  },
+  {
     id: "analytics",
     label: "Analytics",
     icon: "TrendingUp",
@@ -107,6 +152,9 @@ const iconMap = {
   TrendingUp,
   Building2,
   Shield,
+  Gift,
+  AlertTriangle,
+  DollarSign,
 };
 
 export const Sidebar = () => {

@@ -19,6 +19,12 @@ import Roles from "@/pages/roles";
 import Titles from "@/pages/titles";
 import LeaveBalance from "@/pages/leave-balance";
 import LeaveTypes from "@/pages/leave-types";
+import CheckInOut from "@/pages/check-in-out";
+import Overtime from "@/pages/overtime";
+import LateArrival from "@/pages/late-arrival";
+import Bonus from "@/pages/bonus";
+import Penalty from "@/pages/penalty";
+import Payroll from "@/pages/payroll";
 import NotFound from "@/pages/not-found";
 
 function AuthenticatedRoutes() {
@@ -43,6 +49,12 @@ function AuthenticatedRoutes() {
       <Route path="/titles" component={Titles} />
       <Route path="/leave-balance" component={LeaveBalance} />
       <Route path="/leave-types" component={LeaveTypes} />
+      <Route path="/check-in-out" component={CheckInOut} />
+      <Route path="/overtime" component={Overtime} />
+      <Route path="/late-arrival" component={LateArrival} />
+      <Route path="/bonus" component={Bonus} />
+      <Route path="/penalty" component={Penalty} />
+      <Route path="/payroll" component={Payroll} />
       <Route component={NotFound} />
     </Switch>
   );

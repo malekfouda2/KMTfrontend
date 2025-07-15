@@ -614,6 +614,326 @@ class KMTApiClient {
       }),
     });
   }
+
+  // ==================== MISSING ENDPOINTS ====================
+  
+  // 1. CheckInOut Management
+  async getUserCheckInOut(userId: string) {
+    return this.request<any>(`/CheckInOut/user/${userId}`);
+  }
+
+  async getUserMonthlyCheckInOut(userId: string, month: number, year: number) {
+    return this.request<any>(`/CheckInOut/user/${userId}/monthly?month=${month}&year=${year}`);
+  }
+
+  async createCheckIn(checkInData: any) {
+    return this.request<any>("/CheckInOut/checkin", {
+      method: "POST",
+      body: JSON.stringify(checkInData),
+    });
+  }
+
+  async createCheckOut(checkOutData: any) {
+    return this.request<any>("/CheckInOut/checkout", {
+      method: "POST",
+      body: JSON.stringify(checkOutData),
+    });
+  }
+
+  async getAllCheckInOut(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/CheckInOut${queryString}`);
+  }
+
+  async getCheckInOutById(id: string) {
+    return this.request<any>(`/CheckInOut/${id}`);
+  }
+
+  async updateCheckInOut(id: string, checkInOutData: any) {
+    return this.request<any>(`/CheckInOut/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(checkInOutData),
+    });
+  }
+
+  async deleteCheckInOut(id: string) {
+    return this.request<any>(`/CheckInOut/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // 2. Overtime Management
+  async getOvertimeRequests(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/Overtime${queryString}`);
+  }
+
+  async createOvertimeRequest(overtimeData: any) {
+    return this.request<any>("/Overtime", {
+      method: "POST",
+      body: JSON.stringify(overtimeData),
+    });
+  }
+
+  async getOvertimeById(id: string) {
+    return this.request<any>(`/Overtime/${id}`);
+  }
+
+  async updateOvertime(id: string, overtimeData: any) {
+    return this.request<any>(`/Overtime/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(overtimeData),
+    });
+  }
+
+  async deleteOvertime(id: string) {
+    return this.request<any>(`/Overtime/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async approveOvertimeRequest(id: string, comments?: string) {
+    return this.request<any>(`/Overtime/${id}/approve`, {
+      method: "PATCH",
+      body: JSON.stringify({ comments }),
+    });
+  }
+
+  async rejectOvertimeRequest(id: string, comments?: string) {
+    return this.request<any>(`/Overtime/${id}/reject`, {
+      method: "PATCH",
+      body: JSON.stringify({ comments }),
+    });
+  }
+
+  async getUserOvertimeRequests(userId: string, params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/Overtime/user/${userId}${queryString}`);
+  }
+
+  // 3. LateArrival Management
+  async getLateArrivals(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/LateArrival${queryString}`);
+  }
+
+  async createLateArrival(lateArrivalData: any) {
+    return this.request<any>("/LateArrival", {
+      method: "POST",
+      body: JSON.stringify(lateArrivalData),
+    });
+  }
+
+  async getLateArrivalById(id: string) {
+    return this.request<any>(`/LateArrival/${id}`);
+  }
+
+  async updateLateArrival(id: string, lateArrivalData: any) {
+    return this.request<any>(`/LateArrival/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(lateArrivalData),
+    });
+  }
+
+  async deleteLateArrival(id: string) {
+    return this.request<any>(`/LateArrival/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getUserLateArrivals(userId: string, params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/LateArrival/user/${userId}${queryString}`);
+  }
+
+  // 4. Bonus Management
+  async getBonuses(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/Bonus${queryString}`);
+  }
+
+  async createBonus(bonusData: any) {
+    return this.request<any>("/Bonus", {
+      method: "POST",
+      body: JSON.stringify(bonusData),
+    });
+  }
+
+  async getBonusById(id: string) {
+    return this.request<any>(`/Bonus/${id}`);
+  }
+
+  async updateBonus(id: string, bonusData: any) {
+    return this.request<any>(`/Bonus/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(bonusData),
+    });
+  }
+
+  async deleteBonus(id: string) {
+    return this.request<any>(`/Bonus/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getUserBonuses(userId: string, params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/Bonus/user/${userId}${queryString}`);
+  }
+
+  // 5. Penalty Management
+  async getPenalties(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/Penalty${queryString}`);
+  }
+
+  async createPenalty(penaltyData: any) {
+    return this.request<any>("/Penalty", {
+      method: "POST",
+      body: JSON.stringify(penaltyData),
+    });
+  }
+
+  async getPenaltyById(id: string) {
+    return this.request<any>(`/Penalty/${id}`);
+  }
+
+  async updatePenalty(id: string, penaltyData: any) {
+    return this.request<any>(`/Penalty/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(penaltyData),
+    });
+  }
+
+  async deletePenalty(id: string) {
+    return this.request<any>(`/Penalty/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getUserPenalties(userId: string, params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/Penalty/user/${userId}${queryString}`);
+  }
+
+  // 6. Payroll Management
+  async getPayrolls(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/Payroll${queryString}`);
+  }
+
+  async createPayroll(payrollData: any) {
+    return this.request<any>("/Payroll", {
+      method: "POST",
+      body: JSON.stringify(payrollData),
+    });
+  }
+
+  async getPayrollById(id: string) {
+    return this.request<any>(`/Payroll/${id}`);
+  }
+
+  async updatePayroll(id: string, payrollData: any) {
+    return this.request<any>(`/Payroll/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payrollData),
+    });
+  }
+
+  async updatePayrollAmount(id: string, amount: number) {
+    return this.request<any>(`/Payroll/${id}/amount`, {
+      method: "PATCH",
+      body: JSON.stringify({ toBePaidAmount: amount }),
+    });
+  }
+
+  async deletePayroll(id: string) {
+    return this.request<any>(`/Payroll/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getUserPayrolls(userId: string, params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/Payroll/user/${userId}${queryString}`);
+  }
+
+  async getNextPayroll(userId: string) {
+    return this.request<any>(`/Payroll/user/${userId}/next`);
+  }
+
+  async getAllUserPayrolls(userId: string) {
+    return this.request<any[]>(`/Payroll/user/${userId}/all`);
+  }
+
+  // 7. WorkPolicy Management (if exists in backend)
+  async getWorkPolicies(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/WorkPolicy${queryString}`);
+  }
+
+  async createWorkPolicy(workPolicyData: any) {
+    return this.request<any>("/WorkPolicy", {
+      method: "POST",
+      body: JSON.stringify(workPolicyData),
+    });
+  }
+
+  async getWorkPolicyById(id: string) {
+    return this.request<any>(`/WorkPolicy/${id}`);
+  }
+
+  async updateWorkPolicy(id: string, workPolicyData: any) {
+    return this.request<any>(`/WorkPolicy/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(workPolicyData),
+    });
+  }
+
+  async deleteWorkPolicy(id: string) {
+    return this.request<any>(`/WorkPolicy/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Mobile API endpoints (as seen in Postman collection)
+  async getMobileOvertimeRequests(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/mobile/Overtime${queryString}`);
+  }
+
+  async createMobileOvertimeRequest(overtimeData: any) {
+    return this.request<any>("/mobile/Overtime", {
+      method: "POST",
+      body: JSON.stringify(overtimeData),
+    });
+  }
+
+  async getMobileBonuses(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/mobile/Bonus${queryString}`);
+  }
+
+  async getMobilePenalties(params?: any) {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<any[]>(`/mobile/Penalty${queryString}`);
+  }
+
+  async getMobilePenaltyById(id: string) {
+    return this.request<any>(`/mobile/Penalty/${id}`);
+  }
+
+  async getMobilePayrolls() {
+    return this.request<any>(`/mobile/Payroll`);
+  }
+
+  async getMobilePayrollById(id: string) {
+    return this.request<any>(`/mobile/Payroll/${id}`);
+  }
+
+  async getAllMobilePayrolls() {
+    return this.request<any[]>(`/mobile/Payroll/all`);
+  }
 }
 
 export const kmtApiClient = new KMTApiClient(KMT_API_BASE_URL);
