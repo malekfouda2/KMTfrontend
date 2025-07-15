@@ -6,10 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertTriangle, User, Calendar, DollarSign, Plus, Edit, Trash2 } from "lucide-react";
+import { AlertTriangle, User, Calendar, DollarSign, Plus, Edit, Trash2, Eye } from "lucide-react";
 import { kmtApiClient } from "@/lib/kmt-api";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -21,29 +20,29 @@ interface Penalty {
   madeBy: string;
   madeByName: string;
   payrollId: string;
-  lateArrivalId?: string;
   value: number;
   note: string;
   reason: string;
-  type: number;
   applied: boolean;
   createdAt: string;
 }
 
-const PenaltyTypes = {
-  1: "Late Arrival",
-  2: "Unauthorized Absence",
-  3: "Policy Violation",
-  4: "Performance Issue",
-  5: "Dress Code Violation",
-  6: "Other"
-};
+const PenaltyReasons = [
+  "Late Arrival",
+  "Unauthorized Absence",
+  "Policy Violation",
+  "Performance Issue",
+  "Disciplinary Action",
+  "Other"
+];
 
 export default function Penalty() {
   const [searchTerm, setSearchTerm] = useState("");
   const [appliedFilter, setAppliedFilter] = useState<string>("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedPenalty, setSelectedPenalty] = useState<Penalty | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [editingPenalty, setEditingPenalty] = useState<Penalty | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -51,21 +50,19 @@ export default function Penalty() {
   // Fetch penalties
   const { data: penalties = [], isLoading } = useQuery({
     queryKey: ["/api/Penalty"],
-    queryFn: () => kmtApiClient.getPenalties(),
-    onError: (error: Error) => {
-      console.error("Error fetching penalties:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load penalties",
-        variant: "destructive",
-      });
+    queryFn: async () => {
+      const response = await kmtApiClient.getPenalties();
+      return response?.data || [];
     },
   });
 
   // Fetch users for dropdown
   const { data: users = [] } = useQuery({
     queryKey: ["/api/User"],
-    queryFn: () => kmtApiClient.getUsers(),
+    queryFn: async () => {
+      const response = await kmtApiClient.getUsers();
+      return response?.data || [];
+    },
   });
 
   // Create penalty mutation
@@ -90,7 +87,8 @@ export default function Penalty() {
 
   // Update penalty mutation
   const updatePenaltyMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => kmtApiClient.updatePenalty(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) => 
+      kmtApiClient.updatePenalty(id, data),
     onSuccess: () => {
       toast({
         title: "Success",
@@ -128,42 +126,20 @@ export default function Penalty() {
     },
   });
 
+  // Filter penalties
   const filteredPenalties = penalties.filter((penalty: Penalty) => {
-    const matchesSearch = penalty.userName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = appliedFilter === "" || 
+    const matchesSearch = penalty.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         penalty.reason?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         penalty.note?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesApplied = !appliedFilter || 
       (appliedFilter === "applied" && penalty.applied) ||
       (appliedFilter === "pending" && !penalty.applied);
-    return matchesSearch && matchesFilter;
+    return matchesSearch && matchesApplied;
   });
 
-  const handleCreatePenalty = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const penaltyData = {
-      userId: formData.get("userId"),
-      value: parseFloat(formData.get("value") as string),
-      note: formData.get("note"),
-      reason: formData.get("reason"),
-      type: parseInt(formData.get("type") as string),
-      applied: false,
-    };
-    createPenaltyMutation.mutate(penaltyData);
-  };
-
-  const handleUpdatePenalty = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!editingPenalty) return;
-    
-    const formData = new FormData(event.currentTarget);
-    const penaltyData = {
-      userId: editingPenalty.userId,
-      value: parseFloat(formData.get("value") as string),
-      note: formData.get("note"),
-      reason: formData.get("reason"),
-      type: parseInt(formData.get("type") as string),
-      applied: formData.get("applied") === "true",
-    };
-    updatePenaltyMutation.mutate({ id: editingPenalty.id, data: penaltyData });
+  const handleViewDetails = (penalty: Penalty) => {
+    setSelectedPenalty(penalty);
+    setIsDetailsModalOpen(true);
   };
 
   const handleEditPenalty = (penalty: Penalty) => {
@@ -171,69 +147,128 @@ export default function Penalty() {
     setIsEditModalOpen(true);
   };
 
-  const handleDeletePenalty = (id: string) => {
+  const handleCreatePenalty = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = {
+      userId: formData.get("userId"),
+      value: parseFloat(formData.get("value") as string),
+      reason: formData.get("reason"),
+      note: formData.get("note"),
+    };
+    createPenaltyMutation.mutate(data);
+  };
+
+  const handleUpdatePenalty = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPenalty) return;
+    
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = {
+      userId: formData.get("userId"),
+      value: parseFloat(formData.get("value") as string),
+      reason: formData.get("reason"),
+      note: formData.get("note"),
+    };
+    updatePenaltyMutation.mutate({ id: editingPenalty.id, data });
+  };
+
+  const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this penalty?")) {
       deletePenaltyMutation.mutate(id);
     }
   };
 
   const getAppliedBadge = (applied: boolean) => {
-    if (applied) {
-      return <Badge variant="default" className="bg-red-100 text-red-800">Applied</Badge>;
-    } else {
-      return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+    return applied ? 
+      <Badge variant="secondary" className="bg-green-100 text-green-800">Applied</Badge> :
+      <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+  };
+
+  const getReasonBadge = (reason: string) => {
+    const colors = {
+      "Late Arrival": "bg-yellow-100 text-yellow-800",
+      "Unauthorized Absence": "bg-red-100 text-red-800",
+      "Policy Violation": "bg-orange-100 text-orange-800",
+      "Performance Issue": "bg-blue-100 text-blue-800",
+      "Disciplinary Action": "bg-purple-100 text-purple-800",
+      "Other": "bg-gray-100 text-gray-800"
+    };
+    return (
+      <Badge variant="outline" className={colors[reason as keyof typeof colors] || "bg-gray-100 text-gray-800"}>
+        {reason}
+      </Badge>
+    );
+  };
+
+  const formatDateTime = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "MMM dd, yyyy HH:mm");
+    } catch {
+      return dateString;
     }
   };
 
-  const getTotalPenaltyValue = () => {
-    return penalties.reduce((total: number, penalty: Penalty) => total + penalty.value, 0);
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
   };
 
-  const getAppliedPenaltyValue = () => {
-    return penalties.filter((penalty: Penalty) => penalty.applied).reduce((total: number, penalty: Penalty) => total + penalty.value, 0);
-  };
+  // Calculate statistics
+  const totalPenalties = filteredPenalties.length;
+  const appliedPenalties = filteredPenalties.filter((penalty: Penalty) => penalty.applied).length;
+  const pendingPenalties = filteredPenalties.filter((penalty: Penalty) => !penalty.applied).length;
+  const totalValue = filteredPenalties.reduce((sum: number, penalty: Penalty) => sum + penalty.value, 0);
+  const appliedValue = filteredPenalties.filter((penalty: Penalty) => penalty.applied).reduce((sum: number, penalty: Penalty) => sum + penalty.value, 0);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading penalties...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Penalty Management</h1>
-          <p className="text-gray-600 mt-2">Manage employee penalties and deductions</p>
+          <p className="text-gray-600 mt-1">Manage employee penalties and deductions</p>
         </div>
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-red-600 hover:bg-red-700">
-              <Plus className="w-4 h-4 mr-2" />
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
               Create Penalty
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Create New Penalty</DialogTitle>
+              <DialogTitle>Create Penalty</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreatePenalty} className="space-y-4">
               <div>
                 <Label htmlFor="userId">Employee</Label>
-                <Select name="userId" required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select employee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map((user: any) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.username}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  id="userId"
+                  name="userId"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select employee</option>
+                  {users.map((user: any) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <Label htmlFor="value">Penalty Amount</Label>
@@ -242,33 +277,26 @@ export default function Penalty() {
                   name="value"
                   type="number"
                   step="0.01"
-                  placeholder="Enter penalty amount"
+                  min="0"
                   required
+                  placeholder="Enter penalty amount"
                 />
-              </div>
-              <div>
-                <Label htmlFor="type">Penalty Type</Label>
-                <Select name="type" required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select penalty type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PenaltyTypes).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>
-                        {value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
               <div>
                 <Label htmlFor="reason">Reason</Label>
-                <Input
+                <select
                   id="reason"
                   name="reason"
-                  placeholder="Enter reason for penalty"
                   required
-                />
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select reason</option>
+                  {PenaltyReasons.map((reason) => (
+                    <option key={reason} value={reason}>
+                      {reason}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <Label htmlFor="note">Note</Label>
@@ -276,96 +304,123 @@ export default function Penalty() {
                   id="note"
                   name="note"
                   placeholder="Additional notes (optional)"
-                  rows={3}
+                  className="min-h-[80px]"
                 />
               </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-red-600 hover:bg-red-700"
-                disabled={createPenaltyMutation.isPending}
-              >
-                {createPenaltyMutation.isPending ? "Creating..." : "Create Penalty"}
-              </Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1" disabled={createPenaltyMutation.isPending}>
+                  {createPenaltyMutation.isPending ? "Creating..." : "Create"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Penalties</p>
-                <p className="text-2xl font-bold text-gray-900">{penalties.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{totalPenalties}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+              <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Value</p>
-                <p className="text-2xl font-bold text-red-600">${getTotalPenaltyValue().toFixed(2)}</p>
-              </div>
-              <DollarSign className="w-8 h-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Applied</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {penalties.filter((penalty: Penalty) => penalty.applied).length}
-                </p>
+                <p className="text-2xl font-bold text-green-600">{appliedPenalties}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-orange-600" />
+              <AlertTriangle className="h-8 w-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Pending</p>
+                <p className="text-2xl font-bold text-yellow-600">{pendingPenalties}</p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Value</p>
+                <p className="text-2xl font-bold text-red-600">{formatCurrency(totalValue)}</p>
+              </div>
+              <DollarSign className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Applied Value</p>
-                <p className="text-2xl font-bold text-orange-600">${getAppliedPenaltyValue().toFixed(2)}</p>
+                <p className="text-2xl font-bold text-green-600">{formatCurrency(appliedValue)}</p>
               </div>
-              <DollarSign className="w-8 h-8 text-orange-600" />
+              <DollarSign className="h-8 w-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
-            Penalty Records
-          </CardTitle>
-          <div className="flex items-center gap-4 mt-4">
+          <CardTitle>Filter Penalties</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Search by employee name..."
+                placeholder="Search by employee name, reason, or note..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm"
               />
             </div>
-            <Select value={appliedFilter} onValueChange={setAppliedFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
-                <SelectItem value="applied">Applied</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="w-48">
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={appliedFilter}
+                onChange={(e) => setAppliedFilter(e.target.value)}
+              >
+                <option value="">All Status</option>
+                <option value="applied">Applied</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Penalties Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Penalties</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -374,7 +429,6 @@ export default function Penalty() {
                 <TableRow>
                   <TableHead>Employee</TableHead>
                   <TableHead>Amount</TableHead>
-                  <TableHead>Type</TableHead>
                   <TableHead>Reason</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created By</TableHead>
@@ -386,57 +440,56 @@ export default function Penalty() {
                 {filteredPenalties.map((penalty: Penalty) => (
                   <TableRow key={penalty.id}>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-500" />
-                        {penalty.userName}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white text-sm font-medium">
+                          {penalty.userName?.charAt(0) || 'U'}
+                        </div>
+                        <div>
+                          <p className="font-medium">{penalty.userName || 'Unknown User'}</p>
+                          <p className="text-sm text-gray-500">ID: {penalty.userId}</p>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium text-red-600">
-                        ${penalty.value.toFixed(2)}
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-4 w-4 text-gray-400" />
+                        <span className="font-medium text-red-600">{formatCurrency(penalty.value)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{getReasonBadge(penalty.reason)}</TableCell>
+                    <TableCell>{getAppliedBadge(penalty.applied)}</TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{penalty.madeByName || 'Unknown'}</p>
+                        <p className="text-sm text-gray-500">ID: {penalty.madeBy}</p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="border-red-200">
-                        {PenaltyTypes[penalty.type as keyof typeof PenaltyTypes] || `Type ${penalty.type}`}
-                      </Badge>
+                      {penalty.createdAt ? formatDateTime(penalty.createdAt) : '-'}
                     </TableCell>
                     <TableCell>
-                      <div className="max-w-xs truncate text-sm">
-                        {penalty.reason}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getAppliedBadge(penalty.applied)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {penalty.madeByName || "System"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-gray-500" />
-                        {format(new Date(penalty.createdAt), "MMM dd, yyyy")}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
+                      <div className="flex gap-2">
                         <Button
+                          variant="ghost"
                           size="sm"
-                          variant="outline"
-                          onClick={() => handleEditPenalty(penalty)}
+                          onClick={() => handleViewDetails(penalty)}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Eye className="h-4 w-4" />
                         </Button>
                         <Button
+                          variant="ghost"
                           size="sm"
-                          variant="outline"
-                          className="text-red-600 border-red-600 hover:bg-red-50"
-                          onClick={() => handleDeletePenalty(penalty.id)}
-                          disabled={deletePenaltyMutation.isPending}
+                          onClick={() => handleEditPenalty(penalty)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(penalty.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -448,77 +501,130 @@ export default function Penalty() {
         </CardContent>
       </Card>
 
+      {/* Details Modal */}
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Penalty Details</DialogTitle>
+          </DialogHeader>
+          {selectedPenalty && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Employee</label>
+                <p className="text-sm text-gray-900">{selectedPenalty.userName || 'Unknown User'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Amount</label>
+                <p className="text-sm text-gray-900">{formatCurrency(selectedPenalty.value)}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Reason</label>
+                <div className="mt-1">{getReasonBadge(selectedPenalty.reason)}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Status</label>
+                <div className="mt-1">{getAppliedBadge(selectedPenalty.applied)}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Created By</label>
+                <p className="text-sm text-gray-900">{selectedPenalty.madeByName || 'Unknown'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Date</label>
+                <p className="text-sm text-gray-900">
+                  {selectedPenalty.createdAt ? formatDateTime(selectedPenalty.createdAt) : '-'}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Note</label>
+                <p className="text-sm text-gray-900">{selectedPenalty.note || '-'}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Penalty</DialogTitle>
           </DialogHeader>
           {editingPenalty && (
             <form onSubmit={handleUpdatePenalty} className="space-y-4">
               <div>
-                <Label htmlFor="value">Penalty Amount</Label>
+                <Label htmlFor="edit_userId">Employee</Label>
+                <select
+                  id="edit_userId"
+                  name="userId"
+                  required
+                  defaultValue={editingPenalty.userId}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select employee</option>
+                  {users.map((user: any) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="edit_value">Penalty Amount</Label>
                 <Input
-                  id="value"
+                  id="edit_value"
                   name="value"
                   type="number"
                   step="0.01"
+                  min="0"
+                  required
                   defaultValue={editingPenalty.value}
-                  required
+                  placeholder="Enter penalty amount"
                 />
               </div>
               <div>
-                <Label htmlFor="type">Penalty Type</Label>
-                <Select name="type" defaultValue={editingPenalty.type.toString()} required>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PenaltyTypes).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>
-                        {value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="reason">Reason</Label>
-                <Input
-                  id="reason"
+                <Label htmlFor="edit_reason">Reason</Label>
+                <select
+                  id="edit_reason"
                   name="reason"
-                  defaultValue={editingPenalty.reason}
                   required
-                />
+                  defaultValue={editingPenalty.reason}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select reason</option>
+                  {PenaltyReasons.map((reason) => (
+                    <option key={reason} value={reason}>
+                      {reason}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
-                <Label htmlFor="note">Note</Label>
+                <Label htmlFor="edit_note">Note</Label>
                 <Textarea
-                  id="note"
+                  id="edit_note"
                   name="note"
                   defaultValue={editingPenalty.note}
-                  rows={3}
+                  placeholder="Additional notes (optional)"
+                  className="min-h-[80px]"
                 />
               </div>
-              <div>
-                <Label htmlFor="applied">Status</Label>
-                <Select name="applied" defaultValue={editingPenalty.applied.toString()}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="false">Pending</SelectItem>
-                    <SelectItem value="true">Applied</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1" disabled={updatePenaltyMutation.isPending}>
+                  {updatePenaltyMutation.isPending ? "Updating..." : "Update"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setEditingPenalty(null);
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
               </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={updatePenaltyMutation.isPending}
-              >
-                {updatePenaltyMutation.isPending ? "Updating..." : "Update Penalty"}
-              </Button>
             </form>
           )}
         </DialogContent>

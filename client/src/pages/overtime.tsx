@@ -6,10 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Clock, User, Calendar, CheckCircle, XCircle, Plus } from "lucide-react";
+import { Clock, User, Calendar, CheckCircle, XCircle, Plus, Edit, Eye } from "lucide-react";
 import { kmtApiClient } from "@/lib/kmt-api";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -35,27 +34,27 @@ export default function Overtime() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<OvertimeRequest | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch overtime requests
   const { data: overtimeRequests = [], isLoading } = useQuery({
     queryKey: ["/api/Overtime"],
-    queryFn: () => kmtApiClient.getOvertimeRequests(),
-    onError: (error: Error) => {
-      console.error("Error fetching overtime requests:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load overtime requests",
-        variant: "destructive",
-      });
+    queryFn: async () => {
+      const response = await kmtApiClient.getOvertimeRequests();
+      return response?.data || [];
     },
   });
 
   // Fetch users for dropdown
   const { data: users = [] } = useQuery({
     queryKey: ["/api/User"],
-    queryFn: () => kmtApiClient.getUsers(),
+    queryFn: async () => {
+      const response = await kmtApiClient.getUsers();
+      return response?.data || [];
+    },
   });
 
   // Create overtime request mutation
@@ -80,7 +79,7 @@ export default function Overtime() {
 
   // Approve overtime request mutation
   const approveOvertimeMutation = useMutation({
-    mutationFn: ({ id, comments }: { id: string; comments?: string }) =>
+    mutationFn: ({ id, comments }: { id: string; comments?: string }) => 
       kmtApiClient.approveOvertimeRequest(id, comments),
     onSuccess: () => {
       toast({
@@ -88,6 +87,7 @@ export default function Overtime() {
         description: "Overtime request approved successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/Overtime"] });
+      setIsDetailsModalOpen(false);
     },
     onError: (error: Error) => {
       toast({
@@ -100,7 +100,7 @@ export default function Overtime() {
 
   // Reject overtime request mutation
   const rejectOvertimeMutation = useMutation({
-    mutationFn: ({ id, comments }: { id: string; comments?: string }) =>
+    mutationFn: ({ id, comments }: { id: string; comments?: string }) => 
       kmtApiClient.rejectOvertimeRequest(id, comments),
     onSuccess: () => {
       toast({
@@ -108,6 +108,7 @@ export default function Overtime() {
         description: "Overtime request rejected successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/Overtime"] });
+      setIsDetailsModalOpen(false);
     },
     onError: (error: Error) => {
       toast({
@@ -118,98 +119,149 @@ export default function Overtime() {
     },
   });
 
-  const filteredOvertimeRequests = overtimeRequests.filter((request: OvertimeRequest) => {
-    const matchesSearch = request.userName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "" || 
+  // Delete overtime request mutation
+  const deleteOvertimeMutation = useMutation({
+    mutationFn: (id: string) => kmtApiClient.deleteOvertime(id),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Overtime request deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/Overtime"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete overtime request",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Filter requests
+  const filteredRequests = overtimeRequests.filter((request: OvertimeRequest) => {
+    const matchesSearch = request.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         request.note?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = !statusFilter || 
       (statusFilter === "approved" && request.isApproved) ||
-      (statusFilter === "pending" && !request.isApproved);
+      (statusFilter === "pending" && !request.isApproved) ||
+      (statusFilter === "auto" && request.autoCreated);
     return matchesSearch && matchesStatus;
   });
 
-  const handleCreateOvertime = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const overtimeData = {
+  const handleViewDetails = (request: OvertimeRequest) => {
+    setSelectedRequest(request);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCreateOvertime = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = {
       userId: formData.get("userId"),
-      checkInOutId: formData.get("checkInOutId"),
       minutes: parseInt(formData.get("minutes") as string),
       note: formData.get("note"),
+      checkInAt: formData.get("checkInAt"),
+      checkOutAt: formData.get("checkOutAt"),
     };
-    createOvertimeMutation.mutate(overtimeData);
+    createOvertimeMutation.mutate(data);
   };
 
-  const handleApproveOvertime = (id: string) => {
-    approveOvertimeMutation.mutate({ id });
+  const handleApprove = (id: string, comments?: string) => {
+    approveOvertimeMutation.mutate({ id, comments });
   };
 
-  const handleRejectOvertime = (id: string) => {
-    rejectOvertimeMutation.mutate({ id });
+  const handleReject = (id: string, comments?: string) => {
+    rejectOvertimeMutation.mutate({ id, comments });
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm("Are you sure you want to delete this overtime request?")) {
+      deleteOvertimeMutation.mutate(id);
+    }
   };
 
   const getStatusBadge = (request: OvertimeRequest) => {
     if (request.isApproved) {
-      return <Badge variant="default" className="bg-green-100 text-green-800">Approved</Badge>;
+      return <Badge variant="secondary" className="bg-green-100 text-green-800">Approved</Badge>;
     } else {
-      return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+      return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+    }
+  };
+
+  const getTypeBadge = (autoCreated: boolean) => {
+    return autoCreated ? 
+      <Badge variant="outline" className="bg-blue-100 text-blue-800">Auto</Badge> :
+      <Badge variant="outline" className="bg-gray-100 text-gray-800">Manual</Badge>;
+  };
+
+  const formatDateTime = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "MMM dd, yyyy HH:mm");
+    } catch {
+      return dateString;
     }
   };
 
   const formatMinutes = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
   };
+
+  // Calculate statistics
+  const totalRequests = filteredRequests.length;
+  const approvedRequests = filteredRequests.filter((req: OvertimeRequest) => req.isApproved).length;
+  const pendingRequests = filteredRequests.filter((req: OvertimeRequest) => !req.isApproved).length;
+  const autoCreatedRequests = filteredRequests.filter((req: OvertimeRequest) => req.autoCreated).length;
+  const totalMinutes = filteredRequests.reduce((sum: number, req: OvertimeRequest) => sum + req.minutes, 0);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading overtime requests...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Overtime Management</h1>
-          <p className="text-gray-600 mt-2">Manage employee overtime requests and approvals</p>
+          <p className="text-gray-600 mt-1">Manage employee overtime requests and approvals</p>
         </div>
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
               Create Overtime Request
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Create Overtime Request</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreateOvertime} className="space-y-4">
               <div>
                 <Label htmlFor="userId">Employee</Label>
-                <Select name="userId" required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select employee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map((user: any) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.username}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="checkInOutId">Check-In/Out ID</Label>
-                <Input
-                  id="checkInOutId"
-                  name="checkInOutId"
-                  placeholder="Enter check-in/out ID"
+                <select
+                  id="userId"
+                  name="userId"
                   required
-                />
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select employee</option>
+                  {users.map((user: any) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <Label htmlFor="minutes">Overtime Minutes</Label>
@@ -217,7 +269,26 @@ export default function Overtime() {
                   id="minutes"
                   name="minutes"
                   type="number"
+                  min="1"
+                  required
                   placeholder="Enter overtime minutes"
+                />
+              </div>
+              <div>
+                <Label htmlFor="checkInAt">Check In Time</Label>
+                <Input
+                  id="checkInAt"
+                  name="checkInAt"
+                  type="datetime-local"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="checkOutAt">Check Out Time</Label>
+                <Input
+                  id="checkOutAt"
+                  name="checkOutAt"
+                  type="datetime-local"
                   required
                 />
               </div>
@@ -226,48 +297,125 @@ export default function Overtime() {
                 <Textarea
                   id="note"
                   name="note"
-                  placeholder="Enter note or reason for overtime"
-                  rows={3}
+                  placeholder="Optional note about the overtime"
+                  className="min-h-[80px]"
                 />
               </div>
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={createOvertimeMutation.isPending}
-              >
-                {createOvertimeMutation.isPending ? "Creating..." : "Create Overtime Request"}
-              </Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1" disabled={createOvertimeMutation.isPending}>
+                  {createOvertimeMutation.isPending ? "Creating..." : "Create"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Requests</p>
+                <p className="text-2xl font-bold text-gray-900">{totalRequests}</p>
+              </div>
+              <Clock className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Approved</p>
+                <p className="text-2xl font-bold text-green-600">{approvedRequests}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Pending</p>
+                <p className="text-2xl font-bold text-yellow-600">{pendingRequests}</p>
+              </div>
+              <Clock className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Auto Created</p>
+                <p className="text-2xl font-bold text-blue-600">{autoCreatedRequests}</p>
+              </div>
+              <User className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Hours</p>
+                <p className="text-2xl font-bold text-purple-600">{formatMinutes(totalMinutes)}</p>
+              </div>
+              <Calendar className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Overtime Requests
-          </CardTitle>
-          <div className="flex items-center gap-4 mt-4">
+          <CardTitle>Filter Requests</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Search by employee name..."
+                placeholder="Search by employee name or note..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="w-48">
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="">All Status</option>
+                <option value="approved">Approved</option>
+                <option value="pending">Pending</option>
+                <option value="auto">Auto Created</option>
+              </select>
+            </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Requests Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Overtime Requests</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -275,85 +423,78 @@ export default function Overtime() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Employee</TableHead>
-                  <TableHead>Check-In</TableHead>
-                  <TableHead>Check-Out</TableHead>
-                  <TableHead>Overtime Duration</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Check In</TableHead>
+                  <TableHead>Check Out</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Approved By</TableHead>
                   <TableHead>Note</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOvertimeRequests.map((request: OvertimeRequest) => (
+                {filteredRequests.map((request: OvertimeRequest) => (
                   <TableRow key={request.id}>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-500" />
-                        {request.userName}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {format(new Date(request.checkInAt), "MMM dd, HH:mm")}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {format(new Date(request.checkOutAt), "MMM dd, HH:mm")}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">
-                        {formatMinutes(request.minutes)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(request)}
-                    </TableCell>
-                    <TableCell>
-                      {request.approvedByName ? (
-                        <div className="text-sm">
-                          {request.approvedByName}
-                          <br />
-                          <span className="text-gray-500">
-                            {format(new Date(request.approvedAt!), "MMM dd, HH:mm")}
-                          </span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                          {request.userName?.charAt(0) || 'U'}
                         </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="max-w-xs truncate text-sm">
-                        {request.note || "No note"}
+                        <div>
+                          <p className="font-medium">{request.userName || 'Unknown User'}</p>
+                          <p className="text-sm text-gray-500">ID: {request.userId}</p>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {!request.isApproved && (
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-green-600 border-green-600 hover:bg-green-50"
-                            onClick={() => handleApproveOvertime(request.id)}
-                            disabled={approveOvertimeMutation.isPending}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-red-600 border-red-600 hover:bg-red-50"
-                            onClick={() => handleRejectOvertime(request.id)}
-                            disabled={rejectOvertimeMutation.isPending}
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Reject
-                          </Button>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4 text-gray-400" />
+                        <span className="font-medium">{formatMinutes(request.minutes)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {request.checkInAt ? formatDateTime(request.checkInAt) : '-'}
+                    </TableCell>
+                    <TableCell>
+                      {request.checkOutAt ? formatDateTime(request.checkOutAt) : '-'}
+                    </TableCell>
+                    <TableCell>{getTypeBadge(request.autoCreated)}</TableCell>
+                    <TableCell>{getStatusBadge(request)}</TableCell>
+                    <TableCell>
+                      <div className="max-w-32 truncate" title={request.note}>
+                        {request.note || '-'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewDetails(request)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {!request.isApproved && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleApprove(request.id)}
+                              className="text-green-600 hover:text-green-700"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleReject(request.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -362,6 +503,81 @@ export default function Overtime() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Details Modal */}
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Overtime Request Details</DialogTitle>
+          </DialogHeader>
+          {selectedRequest && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Employee</label>
+                <p className="text-sm text-gray-900">{selectedRequest.userName || 'Unknown User'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Duration</label>
+                <p className="text-sm text-gray-900">{formatMinutes(selectedRequest.minutes)}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Check In Time</label>
+                <p className="text-sm text-gray-900">
+                  {selectedRequest.checkInAt ? formatDateTime(selectedRequest.checkInAt) : '-'}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Check Out Time</label>
+                <p className="text-sm text-gray-900">
+                  {selectedRequest.checkOutAt ? formatDateTime(selectedRequest.checkOutAt) : '-'}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Type</label>
+                <div className="mt-1">{getTypeBadge(selectedRequest.autoCreated)}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Status</label>
+                <div className="mt-1">{getStatusBadge(selectedRequest)}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Note</label>
+                <p className="text-sm text-gray-900">{selectedRequest.note || '-'}</p>
+              </div>
+              {selectedRequest.isApproved && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Approved By</label>
+                  <p className="text-sm text-gray-900">{selectedRequest.approvedByName || 'Unknown'}</p>
+                  <p className="text-xs text-gray-500">
+                    {selectedRequest.approvedAt ? formatDateTime(selectedRequest.approvedAt) : '-'}
+                  </p>
+                </div>
+              )}
+              {!selectedRequest.isApproved && (
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    onClick={() => handleApprove(selectedRequest.id)}
+                    className="flex-1"
+                    disabled={approveOvertimeMutation.isPending}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Approve
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleReject(selectedRequest.id)}
+                    className="flex-1"
+                    disabled={rejectOvertimeMutation.isPending}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Reject
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
