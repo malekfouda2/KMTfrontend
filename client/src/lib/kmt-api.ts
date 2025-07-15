@@ -1,6 +1,6 @@
 import { authService } from "./auth";
 
-const KMT_API_BASE_URL = "/api";
+const KMT_API_BASE_URL = "https://1dfd82980d7b.ngrok-free.app/api";
 
 interface KMTResponse<T> {
   data: T;
@@ -31,6 +31,7 @@ class KMTApiClient {
     const config: RequestInit = {
       headers: {
         "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },

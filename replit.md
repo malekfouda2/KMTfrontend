@@ -20,6 +20,7 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - **Fallback**: Local Express.js server for development/mock data
 - **Authentication**: JWT token-based authentication
 - **API Response Format**: KMT-specific structure `{ data: [...], message: "...", success: true }`
+- **CORS Headers**: Includes ngrok-skip-browser-warning header for seamless API access
 
 ## Key Components
 
@@ -280,6 +281,8 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ All pages maintain proper MainLayout wrapping with title and breadcrumb support
 - ✅ Fixed Vite React plugin runtime error by adding proper React imports to main.tsx and App.tsx
 - ✅ Resolved preamble detection issue that was causing build errors
+- ✅ Updated KMT API client to use correct ngrok backend URL (https://1dfd82980d7b.ngrok-free.app/api)
+- ✅ Added ngrok-skip-browser-warning header for seamless API access without browser warnings
 
 ## User Preferences
 
