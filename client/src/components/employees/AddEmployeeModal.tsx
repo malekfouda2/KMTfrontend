@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -231,7 +231,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                       </FormControl>
                       <SelectContent>
                         {titles.map((title: any) => (
-                          <SelectItem key={title.id} value={title.id}>
+                          <SelectItem key={title.id} value={title.id.toString()}>
                             {title.name || title.nameAr || 'Unknown Title'}
                           </SelectItem>
                         ))}
@@ -256,7 +256,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                       </FormControl>
                       <SelectContent>
                         {departments.map((department: any) => (
-                          <SelectItem key={department.id} value={department.id}>
+                          <SelectItem key={department.id} value={department.id.toString()}>
                             {department.name || department.nameAr || 'Unknown Department'}
                           </SelectItem>
                         ))}
