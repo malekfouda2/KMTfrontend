@@ -311,6 +311,10 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ Fixed leave balance filter showing "unknown user" by implementing getUserDisplayName utility
 - ✅ Enhanced bonus/penalty creation with better debugging and forced query refresh
 - ✅ Fixed mission creation time format to use hours (0-23) instead of minutes for backend validation
+- ✅ Fixed titles page to dynamically show employee counts from backend data
+- ✅ Added view employees button to titles page with detailed employee modal
+- ✅ Updated all user display forms to use getUserDisplayName utility consistently
+- ✅ Enhanced getUserDisplayName function with comprehensive debugging and field detection
 
 ## User Preferences
 

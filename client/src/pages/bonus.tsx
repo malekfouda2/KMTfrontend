@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Gift, User, Calendar, DollarSign, Plus, Edit, Trash2, Eye } from "lucide-react";
 import { kmtApiClient } from "@/lib/kmt-api";
+import { getUserDisplayName } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -294,7 +295,7 @@ export default function Bonus() {
                   <option value="">Select employee</option>
                   {users.map((user: any) => (
                     <option key={user.id} value={user.id}>
-                      {user.name || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || user.lastName || user.username || user.email || 'Unknown User')}
+                      {getUserDisplayName(user)}
                     </option>
                   ))}
                 </select>
@@ -612,7 +613,7 @@ export default function Bonus() {
                   <option value="">Select employee</option>
                   {users.map((user: any) => (
                     <option key={user.id} value={user.id}>
-                      {user.firstName} {user.lastName}
+                      {getUserDisplayName(user)}
                     </option>
                   ))}
                 </select>

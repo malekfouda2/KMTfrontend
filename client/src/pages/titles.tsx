@@ -14,9 +14,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, Edit, Trash2, MoreHorizontal, Briefcase, Users } from "lucide-react";
+import { Plus, Edit, Trash2, MoreHorizontal, Briefcase, Users, Eye } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { getUserDisplayName } from "@/lib/utils";
 
 const titleSchema = z.object({
   name: z.string().min(1, "Title name is required"),
@@ -41,6 +42,7 @@ interface Title {
 export default function Titles() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [selectedTitle, setSelectedTitle] = useState<Title | null>(null);
   const [search, setSearch] = useState("");
   const { toast } = useToast();
@@ -66,19 +68,52 @@ export default function Titles() {
     },
   });
 
-  // Fetch titles
+  // Fetch titles with employee counts
   const { data: titlesData = [], isLoading, error } = useQuery({
     queryKey: ['/api/Title'],
     queryFn: async () => {
       try {
-        const result = await apiClient.getTitles({ pageSize: 100 });
-        console.log('Titles fetched:', result);
-        return Array.isArray(result) ? result : [];
+        const [titlesResult, employeesResult] = await Promise.all([
+          apiClient.getTitles({ pageSize: 100 }),
+          apiClient.getEmployees({ pageSize: 1000 })
+        ]);
+        
+        const titles = Array.isArray(titlesResult) ? titlesResult : [];
+        const employees = Array.isArray(employeesResult) ? employeesResult : [];
+        
+        console.log('Titles fetched:', titles);
+        console.log('Employees fetched:', employees);
+        
+        // Calculate employee counts for each title
+        const titlesWithCounts = titles.map(title => {
+          const employeeCount = employees.filter(emp => emp.titleId === title.id).length;
+          return { ...title, employeeCount };
+        });
+        
+        return titlesWithCounts;
       } catch (error: any) {
         console.error('Error fetching titles:', error);
         return [];
       }
     },
+    retry: false,
+  });
+
+  // Fetch employees for selected title
+  const { data: titleEmployees = [] } = useQuery({
+    queryKey: ['/api/Employee', selectedTitle?.id],
+    queryFn: async () => {
+      if (!selectedTitle) return [];
+      try {
+        const result = await apiClient.getEmployees({ pageSize: 1000 });
+        const employees = Array.isArray(result) ? result : [];
+        return employees.filter(emp => emp.titleId === selectedTitle.id);
+      } catch (error: any) {
+        console.error('Error fetching employees for title:', error);
+        return [];
+      }
+    },
+    enabled: !!selectedTitle,
     retry: false,
   });
 
@@ -180,6 +215,11 @@ export default function Titles() {
     if (confirm(`Are you sure you want to delete the title "${title.name}"?`)) {
       deleteTitleMutation.mutate(title.id);
     }
+  };
+
+  const handleViewEmployees = (title: Title) => {
+    setSelectedTitle(title);
+    setShowViewModal(true);
   };
 
   if (error) {
@@ -357,6 +397,10 @@ export default function Titles() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleViewEmployees(title)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Employees ({title.employeeCount || 0})
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEdit(title)}>
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
@@ -453,6 +497,52 @@ export default function Titles() {
               </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Employees Modal */}
+      <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>
+              Employees - {selectedTitle?.name}
+              <Badge variant="secondary" className="ml-2">
+                {titleEmployees.length} employees
+              </Badge>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {titleEmployees.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No employees assigned to this title</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {titleEmployees.map((employee) => (
+                    <Card key={employee.id} className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <Users className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{getUserDisplayName(employee)}</h4>
+                          <p className="text-sm text-gray-500">{employee.email}</p>
+                          <p className="text-sm text-gray-500">{employee.phoneNumber}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setShowViewModal(false)}>
+              Close
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
       </div>
