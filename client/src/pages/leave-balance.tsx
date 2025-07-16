@@ -230,7 +230,7 @@ export default function LeaveBalance() {
                   <SelectItem value="all">All Employees</SelectItem>
                   {users.map((user: KMTUser) => (
                     <SelectItem key={user.id} value={String(user.id)}>
-                      {user.username} ({user.email})
+                      {user.name || user.username || user.email} ({user.email})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -253,7 +253,7 @@ export default function LeaveBalance() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium">{balance.user?.username || 'Unknown User'}</span>
+                    <span className="font-medium">{balance.user?.name || balance.user?.username || balance.user?.email || 'Unknown User'}</span>
                   </div>
                   <Button
                     variant="ghost"

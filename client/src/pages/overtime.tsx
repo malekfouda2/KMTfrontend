@@ -53,8 +53,14 @@ export default function Overtime() {
   const { data: users = [] } = useQuery({
     queryKey: ["/api/User"],
     queryFn: async () => {
-      const response = await kmtApiClient.getUsers();
-      return response?.data || [];
+      try {
+        const response = await kmtApiClient.getUsers();
+        console.log('Users fetched for overtime:', response);
+        return Array.isArray(response) ? response : [];
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        return [];
+      }
     },
   });
 
@@ -260,7 +266,7 @@ export default function Overtime() {
                   <option value="">Select employee</option>
                   {users.map((user: any) => (
                     <option key={user.id} value={user.id}>
-                      {user.firstName} {user.lastName}
+                      {user.name || user.firstName + ' ' + user.lastName || user.username || user.email}
                     </option>
                   ))}
                 </select>

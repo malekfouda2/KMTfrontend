@@ -132,13 +132,20 @@ export default function Roles() {
 
   // Map the KMT backend user structure to our interface
   const users: User[] = Array.isArray(usersData) 
-    ? usersData.map((user: any) => ({
-        id: user.id,
-        name: user.name || user.firstName + ' ' + user.lastName,
-        username: user.username || user.email,
-        email: user.email,
-        role: user.role || 'user'
-      }))
+    ? usersData.map((user: any) => {
+        console.log('Raw user data from backend:', user);
+        const fullName = user.name || 
+          (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : '') ||
+          user.username || 
+          user.email;
+        return {
+          id: user.id,
+          name: fullName,
+          username: user.username || user.email,
+          email: user.email,
+          role: user.role || 'user'
+        };
+      })
     : [];
 
   const roleForm = useForm<RoleFormData>({

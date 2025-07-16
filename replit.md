@@ -297,6 +297,17 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ Tested API connectivity and confirmed authentication endpoints are responding correctly
 - ✅ All API requests now use the updated backend URL with proper ngrok headers
 
+### Critical Bug Fixes (July 16, 2025)
+- ✅ Fixed 405 Method Not Allowed errors in leave management by changing approval/rejection endpoints from POST to PUT
+- ✅ Fixed 400 Bad Request errors in mission creation by correcting DTO structure (lowercase field names)
+- ✅ Fixed 400 Bad Request errors in leave type creation by adding proper request structure with bilingual support
+- ✅ Fixed user data mapping across all management pages (overtime, bonus, penalty, payroll, late arrival, leave balance, roles)
+- ✅ Enhanced user dropdown displays to handle different name formats (name, firstName+lastName, username, email)
+- ✅ Added comprehensive error handling and logging for user data fetching across all forms
+- ✅ Fixed "undefined" display issues in user-related fields throughout the application
+- ✅ Updated mission creation to include all required fields: description, descriptionAr, missionDate, location, locationAr, status, priority
+- ✅ Fixed leave type creation with proper bilingual support and validation
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

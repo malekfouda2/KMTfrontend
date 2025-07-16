@@ -304,7 +304,7 @@ export default function Payroll() {
                     <option value="">Select employee</option>
                     {users.map((user: any) => (
                       <option key={user.id} value={user.id}>
-                        {user.firstName} {user.lastName}
+                        {user.name || user.firstName + ' ' + user.lastName || user.username || user.email}
                       </option>
                     ))}
                   </select>

@@ -309,15 +309,15 @@ class KMTApiClient {
   // Leave Request Specific Operations
   async approveLeaveRequest(id: string, comments?: string) {
     return this.request<any>(`/LeaveRequest/${id}/Approve`, {
-      method: "POST",
-      body: JSON.stringify({ comments }),
+      method: "PUT",
+      body: JSON.stringify({ comments: comments || "" }),
     });
   }
 
   async rejectLeaveRequest(id: string, comments?: string) {
     return this.request<any>(`/LeaveRequest/${id}/Reject`, {
-      method: "POST",
-      body: JSON.stringify({ comments }),
+      method: "PUT", 
+      body: JSON.stringify({ comments: comments || "" }),
     });
   }
 
@@ -340,12 +340,15 @@ class KMTApiClient {
   async createMission(mission: any) {
     // Use exact CreateMissionRequest structure from KMT backend
     const createMissionRequest = {
-      Description: mission.description,
-      DescriptionAr: mission.descriptionAr,
-      MissionDate: mission.missionDate,
-      StartTime: mission.startTime,
-      ...(mission.endTime && { EndTime: mission.endTime }),
-      Location: mission.location
+      description: mission.description,
+      descriptionAr: mission.descriptionAr || mission.description,
+      missionDate: mission.missionDate,
+      startTime: mission.startTime,
+      ...(mission.endTime && { endTime: mission.endTime }),
+      location: mission.location,
+      locationAr: mission.locationAr || mission.location,
+      status: mission.status || "pending",
+      priority: mission.priority || "medium"
     };
     
     console.log('Creating mission with exact KMT DTO structure:', createMissionRequest);
@@ -377,9 +380,22 @@ class KMTApiClient {
 
   // Leave Type management
   async createLeaveType(leaveType: any) {
+    const createLeaveTypeRequest = {
+      name: leaveType.name,
+      nameAr: leaveType.nameAr || leaveType.name,
+      description: leaveType.description,
+      descriptionAr: leaveType.descriptionAr || leaveType.description,
+      maxDays: leaveType.maxDays,
+      carryOver: leaveType.carryOver || false,
+      requiresApproval: leaveType.requiresApproval || true,
+      color: leaveType.color || "#3b82f6"
+    };
+    
+    console.log('Creating leave type with structure:', createLeaveTypeRequest);
+    
     return this.request<any>("/LeaveType", {
       method: "POST",
-      body: JSON.stringify(leaveType),
+      body: JSON.stringify(createLeaveTypeRequest),
     });
   }
 
