@@ -307,6 +307,10 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ Fixed "undefined" display issues in user-related fields throughout the application
 - ✅ Updated mission creation to include all required fields: description, descriptionAr, missionDate, location, locationAr, status, priority
 - ✅ Fixed leave type creation with proper bilingual support and validation
+- ✅ Added reason handling for leave request decline with modal dialog for reason input
+- ✅ Fixed leave balance filter showing "unknown user" by implementing getUserDisplayName utility
+- ✅ Enhanced bonus/penalty creation with better debugging and forced query refresh
+- ✅ Fixed mission creation time format to use hours (0-23) instead of minutes for backend validation
 
 ## User Preferences
 

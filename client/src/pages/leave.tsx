@@ -59,6 +59,9 @@ type LeaveFormData = z.infer<typeof leaveFormSchema>;
 
 export default function Leave() {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectingLeaveId, setRejectingLeaveId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -128,13 +131,16 @@ export default function Leave() {
   });
 
   const rejectLeaveRequestMutation = useMutation({
-    mutationFn: (id: number) => apiClient.rejectLeaveRequest(id),
+    mutationFn: ({ id, reason }: { id: number; reason: string }) => apiClient.rejectLeaveRequest(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/LeaveRequest"] });
       toast({
         title: "Success",
         description: "Leave request rejected successfully",
       });
+      setShowRejectModal(false);
+      setRejectingLeaveId(null);
+      setRejectReason("");
     },
     onError: (error: Error) => {
       toast({
@@ -388,7 +394,10 @@ export default function Leave() {
                                   size="sm"
                                   variant="outline"
                                   className="text-red-600 hover:bg-red-50"
-                                  onClick={() => rejectLeaveRequestMutation.mutate(leave.id)}
+                                  onClick={() => {
+                                    setRejectingLeaveId(leave.id);
+                                    setShowRejectModal(true);
+                                  }}
                                   disabled={rejectLeaveRequestMutation.isPending}
                                 >
                                   <XCircle className="w-4 h-4 mr-1" />
@@ -409,6 +418,63 @@ export default function Leave() {
             )}
           </CardContent>
         </Card>
+
+        {/* Reject Modal */}
+        <Dialog open={showRejectModal} onOpenChange={setShowRejectModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reject Leave Request</DialogTitle>
+              <DialogDescription>
+                Please provide a reason for rejecting this leave request.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="rejectReason">Reason for Rejection *</Label>
+                <Input
+                  id="rejectReason"
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Enter reason for rejection"
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowRejectModal(false);
+                    setRejectingLeaveId(null);
+                    setRejectReason("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (rejectingLeaveId && rejectReason.trim()) {
+                      rejectLeaveRequestMutation.mutate({
+                        id: rejectingLeaveId,
+                        reason: rejectReason.trim()
+                      });
+                    }
+                  }}
+                  disabled={!rejectReason.trim() || rejectLeaveRequestMutation.isPending}
+                >
+                  {rejectLeaveRequestMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Rejecting...
+                    </>
+                  ) : (
+                    "Reject Request"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

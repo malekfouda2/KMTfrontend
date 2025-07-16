@@ -52,8 +52,14 @@ export default function Penalty() {
   const { data: penalties = [], isLoading } = useQuery({
     queryKey: ["/api/Penalty"],
     queryFn: async () => {
-      const response = await kmtApiClient.getPenalties();
-      return response?.data || [];
+      try {
+        const response = await kmtApiClient.getPenalties();
+        console.log('Penalties fetched:', response);
+        return response?.data || [];
+      } catch (error) {
+        console.error('Error fetching penalties:', error);
+        return [];
+      }
     },
   });
 
@@ -74,19 +80,30 @@ export default function Penalty() {
 
   // Create penalty mutation
   const createPenaltyMutation = useMutation({
-    mutationFn: (data: any) => kmtApiClient.createPenalty(data),
-    onSuccess: () => {
+    mutationFn: async (data: any) => {
+      console.log('Creating penalty with data:', data);
+      const response = await kmtApiClient.createPenalty(data);
+      console.log('Penalty creation response:', response);
+      return response;
+    },
+    onSuccess: (data) => {
+      console.log('Penalty created successfully:', data);
       toast({
         title: "Success",
         description: "Penalty created successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/Penalty"] });
+      // Force refetch to ensure UI updates
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/Penalty"] });
+      }, 100);
       setIsCreateModalOpen(false);
     },
     onError: (error: Error) => {
+      console.error('Error creating penalty:', error);
       toast({
         title: "Error",
-        description: "Failed to create penalty",
+        description: error.message || "Failed to create penalty",
         variant: "destructive",
       });
     },

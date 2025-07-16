@@ -53,8 +53,14 @@ export default function Bonus() {
   const { data: bonuses = [], isLoading } = useQuery({
     queryKey: ["/api/Bonus"],
     queryFn: async () => {
-      const response = await kmtApiClient.getBonuses();
-      return response?.data || [];
+      try {
+        const response = await kmtApiClient.getBonuses();
+        console.log('Bonuses fetched:', response);
+        return response?.data || [];
+      } catch (error) {
+        console.error('Error fetching bonuses:', error);
+        return [];
+      }
     },
   });
 
@@ -75,19 +81,30 @@ export default function Bonus() {
 
   // Create bonus mutation
   const createBonusMutation = useMutation({
-    mutationFn: (data: any) => kmtApiClient.createBonus(data),
-    onSuccess: () => {
+    mutationFn: async (data: any) => {
+      console.log('Creating bonus with data:', data);
+      const response = await kmtApiClient.createBonus(data);
+      console.log('Bonus creation response:', response);
+      return response;
+    },
+    onSuccess: (data) => {
+      console.log('Bonus created successfully:', data);
       toast({
         title: "Success",
         description: "Bonus created successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/Bonus"] });
+      // Force refetch to ensure UI updates
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/Bonus"] });
+      }, 100);
       setIsCreateModalOpen(false);
     },
     onError: (error: Error) => {
+      console.error('Error creating bonus:', error);
       toast({
         title: "Error",
-        description: "Failed to create bonus",
+        description: error.message || "Failed to create bonus",
         variant: "destructive",
       });
     },
