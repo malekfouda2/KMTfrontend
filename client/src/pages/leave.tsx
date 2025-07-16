@@ -204,7 +204,7 @@ export default function Leave() {
                               <SelectItem value="loading" disabled>Loading...</SelectItem>
                             ) : (
                               leaveTypes.map((type: any) => (
-                                <SelectItem key={type.id} value={type.id}>
+                                <SelectItem key={type.id} value={String(type.id)}>
                                   {type.name}
                                 </SelectItem>
                               ))

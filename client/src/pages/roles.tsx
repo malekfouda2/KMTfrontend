@@ -364,7 +364,7 @@ export default function Roles() {
                             </FormControl>
                             <SelectContent>
                               {users.map((user: User) => (
-                                <SelectItem key={user.id} value={user.id}>
+                                <SelectItem key={user.id} value={String(user.id)}>
                                   {user.name} ({user.username})
                                 </SelectItem>
                               ))}
@@ -388,7 +388,7 @@ export default function Roles() {
                             </FormControl>
                             <SelectContent>
                               {roles.map((role: Role) => (
-                                <SelectItem key={role.id} value={role.id.toString()}>
+                                <SelectItem key={role.id} value={String(role.id)}>
                                   {role.name}
                                 </SelectItem>
                               ))}

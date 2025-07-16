@@ -229,7 +229,7 @@ export default function LeaveBalance() {
                 <SelectContent>
                   <SelectItem value="all">All Employees</SelectItem>
                   {users.map((user: KMTUser) => (
-                    <SelectItem key={user.id} value={user.id}>
+                    <SelectItem key={user.id} value={String(user.id)}>
                       {user.username} ({user.email})
                     </SelectItem>
                   ))}

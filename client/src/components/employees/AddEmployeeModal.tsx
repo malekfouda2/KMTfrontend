@@ -231,7 +231,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                       </FormControl>
                       <SelectContent>
                         {titles.map((title: any) => (
-                          <SelectItem key={title.id} value={title.id.toString()}>
+                          <SelectItem key={title.id} value={String(title.id)}>
                             {title.name || title.nameAr || 'Unknown Title'}
                           </SelectItem>
                         ))}
@@ -256,7 +256,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
                       </FormControl>
                       <SelectContent>
                         {departments.map((department: any) => (
-                          <SelectItem key={department.id} value={department.id.toString()}>
+                          <SelectItem key={department.id} value={String(department.id)}>
                             {department.name || department.nameAr || 'Unknown Department'}
                           </SelectItem>
                         ))}

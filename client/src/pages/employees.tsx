@@ -226,7 +226,7 @@ export default function Employees() {
                   <SelectContent>
                     <SelectItem value="all">All Departments</SelectItem>
                     {departments.map((dept: any) => (
-                      <SelectItem key={dept.id} value={dept.id.toString()}>
+                      <SelectItem key={dept.id} value={String(dept.id)}>
                         {dept.name}
                       </SelectItem>
                     ))}
@@ -247,7 +247,7 @@ export default function Employees() {
                   <SelectContent>
                     <SelectItem value="all">All Titles</SelectItem>
                     {titles.map((title: any) => (
-                      <SelectItem key={title.id} value={title.id.toString()}>
+                      <SelectItem key={title.id} value={String(title.id)}>
                         {title.name}
                       </SelectItem>
                     ))}
