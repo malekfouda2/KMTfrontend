@@ -67,8 +67,14 @@ export default function Payroll() {
   const { data: users = [] } = useQuery({
     queryKey: ["/api/User"],
     queryFn: async () => {
-      const response = await kmtApiClient.getUsers();
-      return response?.data || [];
+      try {
+        const response = await kmtApiClient.getUsers();
+        console.log('Users fetched for payroll:', response);
+        return Array.isArray(response) ? response : [];
+      } catch (error) {
+        console.error('Error fetching users for payroll:', error);
+        return [];
+      }
     },
   });
 
@@ -304,7 +310,7 @@ export default function Payroll() {
                     <option value="">Select employee</option>
                     {users.map((user: any) => (
                       <option key={user.id} value={user.id}>
-                        {user.name || user.firstName + ' ' + user.lastName || user.username || user.email}
+                        {user.name || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || user.lastName || user.username || user.email || 'Unknown User')}
                       </option>
                     ))}
                   </select>

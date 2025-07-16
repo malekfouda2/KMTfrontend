@@ -105,10 +105,11 @@ export default function LeaveTypes() {
     type.description.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Create leave type mutation
+  // Create leave type mutation - disabled for now since the API doesn't support POST
   const createLeaveTypeMutation = useMutation({
     mutationFn: (data: LeaveTypeFormData) => {
-      return apiClient.createLeaveType(data);
+      // Since the API doesn't support POST, we'll show a message
+      throw new Error("Creating leave types is not supported by the current API version");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/LeaveType'] });
@@ -121,8 +122,8 @@ export default function LeaveTypes() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create leave type",
+        title: "Info",
+        description: "Creating leave types is not supported by the current API version. Please contact system administrator.",
         variant: "destructive",
       });
     },

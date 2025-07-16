@@ -338,13 +338,18 @@ class KMTApiClient {
   }
 
   async createMission(mission: any) {
+    // Convert minutes to hours for KMT backend (expects 0-23 hours)
+    const minutesToHours = (minutes: number) => {
+      return Math.floor(minutes / 60);
+    };
+    
     // Use exact CreateMissionRequest structure from KMT backend
     const createMissionRequest = {
       description: mission.description,
       descriptionAr: mission.descriptionAr || mission.description,
       missionDate: mission.missionDate,
-      startTime: mission.startTime,
-      ...(mission.endTime && { endTime: mission.endTime }),
+      startTime: minutesToHours(mission.startTime),
+      ...(mission.endTime && { endTime: minutesToHours(mission.endTime) }),
       location: mission.location,
       locationAr: mission.locationAr || mission.location,
       status: mission.status || "pending",

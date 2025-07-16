@@ -47,8 +47,24 @@ export default function LeaveBalance() {
     queryKey: ["/api/LeaveBalance", selectedYear, selectedUser],
     queryFn: async () => {
       try {
+        // First fetch leave types for mapping
+        const leaveTypesResult = await apiClient.getLeaveTypes();
+        const leaveTypesData = Array.isArray(leaveTypesResult) ? leaveTypesResult : [];
+        
         if (selectedUser && selectedUser !== "all") {
-          return await apiClient.getLeaveBalance(selectedUser, parseInt(selectedYear));
+          const userBalance = await apiClient.getLeaveBalance(selectedUser, parseInt(selectedYear));
+          if (Array.isArray(userBalance)) {
+            return userBalance.map((balance: any) => ({
+              ...balance,
+              leaveType: leaveTypesData.find((lt: any) => lt.id === balance.leaveTypeId) || { name: 'Unknown Leave Type', nameAr: 'نوع إجازة غير معروف' }
+            }));
+          } else if (userBalance) {
+            return [{
+              ...userBalance,
+              leaveType: leaveTypesData.find((lt: any) => lt.id === userBalance.leaveTypeId) || { name: 'Unknown Leave Type', nameAr: 'نوع إجازة غير معروف' }
+            }];
+          }
+          return [];
         }
         
         // Get all users' leave balances (implementation depends on backend)
@@ -59,9 +75,19 @@ export default function LeaveBalance() {
           try {
             const userBalance = await apiClient.getLeaveBalance(user.id, parseInt(selectedYear));
             if (Array.isArray(userBalance)) {
-              allBalances.push(...userBalance);
+              // Enhance each balance with user and leave type info
+              const enhancedBalances = userBalance.map((balance: any) => ({
+                ...balance,
+                user: user, // Add user info
+                leaveType: leaveTypesData.find((lt: any) => lt.id === balance.leaveTypeId) || { name: 'Unknown Leave Type', nameAr: 'نوع إجازة غير معروف' }
+              }));
+              allBalances.push(...enhancedBalances);
             } else if (userBalance) {
-              allBalances.push(userBalance);
+              allBalances.push({
+                ...userBalance,
+                user: user,
+                leaveType: leaveTypesData.find((lt: any) => lt.id === userBalance.leaveTypeId) || { name: 'Unknown Leave Type', nameAr: 'نوع إجازة غير معروف' }
+              });
             }
           } catch (error) {
             console.log(`No balance found for user ${user.id}`);
@@ -82,8 +108,11 @@ export default function LeaveBalance() {
     queryKey: ["/api/User"],
     queryFn: async () => {
       try {
-        return await apiClient.getUsers({ pageSize: 100 });
+        const result = await apiClient.getUsers({ pageSize: 100 });
+        console.log('Users fetched for leave balance:', result);
+        return Array.isArray(result) ? result : [];
       } catch (error) {
+        console.error('Error fetching users for leave balance:', error);
         return [];
       }
     },
@@ -95,8 +124,11 @@ export default function LeaveBalance() {
     queryKey: ["/api/LeaveType"],
     queryFn: async () => {
       try {
-        return await apiClient.getLeaveTypes();
+        const result = await apiClient.getLeaveTypes();
+        console.log('Leave types fetched for leave balance:', result);
+        return Array.isArray(result) ? result : [];
       } catch (error) {
+        console.error('Error fetching leave types for leave balance:', error);
         return [];
       }
     },

@@ -277,7 +277,7 @@ export default function Bonus() {
                   <option value="">Select employee</option>
                   {users.map((user: any) => (
                     <option key={user.id} value={user.id}>
-                      {user.name || user.firstName + ' ' + user.lastName || user.username || user.email}
+                      {user.name || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || user.lastName || user.username || user.email || 'Unknown User')}
                     </option>
                   ))}
                 </select>
