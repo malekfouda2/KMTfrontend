@@ -1,6 +1,6 @@
 import { authService } from "./auth";
 
-const KMT_API_BASE_URL = "https://1dfd82980d7b.ngrok-free.app/api";
+const KMT_API_BASE_URL = "https://5daadc7b4a4d.ngrok-free.app/api";
 
 interface KMTResponse<T> {
   data: T;

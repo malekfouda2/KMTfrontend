@@ -16,7 +16,7 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - **Form Handling**: React Hook Form with Zod validation
 
 ### Backend Integration
-- **Primary Backend**: KMT Backend (https://1dfd82980d7b.ngrok-free.app/api)
+- **Primary Backend**: KMT Backend (https://5daadc7b4a4d.ngrok-free.app/api)
 - **Fallback**: Local Express.js server for development/mock data
 - **Authentication**: JWT token-based authentication
 - **API Response Format**: KMT-specific structure `{ data: [...], message: "...", success: true }`
@@ -226,7 +226,7 @@ This is a comprehensive HR Management System built with React.js frontend and in
   - Fixed Super Admin role permissions and navigation access
 
 - July 15, 2025: Comprehensive Backend Integration Update
-  - Updated base URL to new ngrok endpoint (https://1dfd82980d7b.ngrok-free.app/api)
+  - Updated base URL to new ngrok endpoint (https://5daadc7b4a4d.ngrok-free.app/api)
   - Complete API client rewrite with all new KMT Backend endpoints from Postman collection
   - Added comprehensive LeaveBalance, Permission, Title management endpoints
   - Enhanced User Role assignment and Mission management with proper endpoint structure
@@ -281,7 +281,7 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ All pages maintain proper MainLayout wrapping with title and breadcrumb support
 - ✅ Fixed Vite React plugin runtime error by adding proper React imports to main.tsx and App.tsx
 - ✅ Resolved preamble detection issue that was causing build errors
-- ✅ Updated KMT API client to use correct ngrok backend URL (https://1dfd82980d7b.ngrok-free.app/api)
+- ✅ Updated KMT API client to use correct ngrok backend URL (https://5daadc7b4a4d.ngrok-free.app/api)
 - ✅ Added ngrok-skip-browser-warning header for seamless API access without browser warnings
 - ✅ Fixed missions page runtime error by adding null checks for mission.status property
 - ✅ Enhanced getStatusColor function to handle undefined status values safely
@@ -291,6 +291,11 @@ This is a comprehensive HR Management System built with React.js frontend and in
 - ✅ Added React imports to all pages to prevent Vite React plugin preamble detection issues
 - ✅ Fixed MainLayout integration for titles, leave-balance, and leave-types pages to ensure sidebar navigation
 - ✅ All pages now have proper sidebar navigation and consistent layout structure
+
+### Backend URL Update (July 16, 2025)
+- ✅ Updated KMT API base URL to new ngrok endpoint (https://5daadc7b4a4d.ngrok-free.app/api)
+- ✅ Tested API connectivity and confirmed authentication endpoints are responding correctly
+- ✅ All API requests now use the updated backend URL with proper ngrok headers
 
 ## User Preferences
 
